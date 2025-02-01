@@ -1,0 +1,23 @@
+{
+  "name": "llm-service",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "dev": "sst dev",
+    "deploy:prod": "sst deploy --stage production"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.147",
+    "@types/node": "^22.13.0"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.5.0",
+    "@hono/zod-openapi": "^0.18.3",
+    "hono": "^4.6.20",
+    "sst": "3.6.42",
+    "zod": "^3.24.1"
+  }
+}
