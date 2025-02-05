@@ -16,6 +16,17 @@ export default $config({
     api.route("ANY /{proxy+}", {
       handler: "src/index.handler",
       runtime: "nodejs22.x",
+      permissions: [
+        {
+          effect: "allow",
+          actions: [
+            "bedrock:InvokeModel",
+            "bedrock:ListFoundationModels",
+            "bedrock:GetFoundationModel",
+          ],
+          resources: ["*"],
+        },
+      ],
     });
 
     return {
