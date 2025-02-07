@@ -29,8 +29,26 @@ export default $config({
       ],
     });
 
+    // UI
+    const ui = new sst.aws.StaticSite("llm-ui", {
+      path: "ui",
+      build: {
+        command: "npm run build",
+        output: "dist",
+      },
+      dev: {
+        autostart: true,
+        command: "npm run dev",
+        url: "http://localhost:5173/",
+      },
+      environment: {
+        VITE_LLMSVC_API_ROOT: api.url,
+      },
+    });
+
     return {
       api: api.url,
+      ui: ui.url,
     };
   },
 });
