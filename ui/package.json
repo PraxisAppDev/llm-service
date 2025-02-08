@@ -1,7 +1,7 @@
 {
   "name": "llm-service-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/vite": "^4.0.4",
     "@tanstack/react-router": "^1.99.13",
     "class-variance-authority": "^0.7.1",
