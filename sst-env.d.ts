@@ -5,6 +5,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "llm-db": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "llm-gw": {
       "type": "sst.aws.ApiGatewayV2"
       "url": string

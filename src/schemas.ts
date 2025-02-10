@@ -2,6 +2,46 @@ import { z } from "@hono/zod-openapi";
 
 // COMMON --------
 
+const userId = z
+  .string({ required_error: "User ID is required" })
+  .cuid2({ message: "Invalid user ID format" })
+  .openapi({
+    description: "The user's unique ID",
+    example: "pfh0haxfpzowht3oi213cqos",
+  });
+
+const userName = z
+  .string({ required_error: "Name is required" })
+  .nonempty({ message: "Name must not be an empty string" })
+  .openapi({ description: "The user's name for display" });
+
+const email = z
+  .string({ required_error: "Email is required" })
+  .email({ message: "Invalid email address" })
+  .openapi({
+    description: "The user's email address",
+    example: "user@example.com",
+  });
+
+const sessionToken = z
+  .string({ required_error: "Session token is required" })
+  .openapi({ description: "The user's session token" });
+
+const createdAt = z
+  .string({ required_error: "Created datetime is required" })
+  .datetime({ message: "Invalid ISO 8601 created datetime" })
+  .openapi({
+    description: "The date and time the record was created in ISO 8601 format",
+  });
+
+const updatedAt = z
+  .string({ required_error: "Updated datetime is required" })
+  .datetime({ message: "Invalid ISO 8601 updated datetime" })
+  .openapi({
+    description:
+      "The date and time the record was last updated in ISO 8601 format",
+  });
+
 const apiKey = z
   .string({ required_error: "X-API-KEY header is required" })
   .uuid({ message: "Invalid API key format" })
@@ -89,6 +129,14 @@ export const AuthorizedReqHeadersSchema = z
   })
   .openapi("AuthorizedRequestHeaders");
 
+// COOKIES --------
+
+export const AuthorizedReqCookiesSchema = z
+  .object({
+    "SESSION-TOKEN": sessionToken.optional(),
+  })
+  .openapi("AuthorizedRequestCookies");
+
 // REQUEST PARAMS --------
 
 export const GetModelReqSchema = z
@@ -98,6 +146,18 @@ export const GetModelReqSchema = z
   .openapi("ModelRequestParams");
 
 // REQUEST BODIES --------
+
+export const AdminLoginReqSchema = z
+  .object({
+    email,
+    password: z
+      .string({ required_error: "Password is required" })
+      .min(8, { message: "Password must be at least 8 characters" })
+      .openapi({
+        description: "The user's password (at least 8 characters)",
+      }),
+  })
+  .openapi("AdminLoginRequest");
 
 export const CompletionReqSchema = z
   .object({
@@ -141,6 +201,18 @@ export const ChatReqSchema = z
   .openapi("ChatRequest");
 
 // RESPONSES --------
+
+export const AdminUserResSchema = z
+  .object({
+    id: userId,
+    name: userName,
+    email,
+    createdAt,
+    updatedAt,
+  })
+  .openapi("AuthUserResponse");
+
+export type AdminUser = z.infer<typeof AdminUserResSchema>;
 
 export const CompletionResSchema = z
   .object({

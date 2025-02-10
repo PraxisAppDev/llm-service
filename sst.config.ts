@@ -10,12 +10,32 @@ export default $config({
     };
   },
   async run() {
+    // DATABASE
+    const db = new sst.aws.Dynamo("llm-db", {
+      fields: {
+        userId: "string",
+        recordId: "string",
+      },
+      primaryIndex: { hashKey: "userId", rangeKey: "recordId" },
+      globalIndexes: {
+        AdminAuthIdx: {
+          hashKey: "recordId",
+          projection: ["passwordHash", "createdAt", "updatedAt"],
+        },
+        AdminSessionIdx: {
+          hashKey: "recordId",
+          projection: ["expiresAt"],
+        },
+      },
+    });
+
     // API
     const api = new sst.aws.ApiGatewayV2("llm-gw");
 
     api.route("ANY /{proxy+}", {
       handler: "src/index.handler",
       runtime: "nodejs22.x",
+      link: [db],
       permissions: [
         {
           effect: "allow",
@@ -27,6 +47,9 @@ export default $config({
           resources: ["*"],
         },
       ],
+      nodejs: {
+        install: ["@node-rs/argon2"],
+      },
     });
 
     // UI

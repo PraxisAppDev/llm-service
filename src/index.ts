@@ -1,13 +1,19 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { addDays, getUnixTime } from "date-fns";
 import { handle } from "hono/aws-lambda";
+import { setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
-import { authorize } from "./auth";
+import { authorize, pwHash, pwVerify, sid } from "./auth";
 import { LambdaBindings, responseTypes } from "./common";
+import { adminSessions, adminUsers } from "./db";
 import { llm, MODELS } from "./llm";
 import { validationHook } from "./middleware";
 import {
+  AdminLoginReqSchema,
+  AdminUserResSchema,
+  AuthorizedReqCookiesSchema,
   AuthorizedReqHeadersSchema,
   ChatReqSchema,
   CompletionReqSchema,
@@ -27,11 +33,19 @@ const app = new OpenAPIHono<{ Bindings: LambdaBindings }>({
 // user error logging
 app.use(logger());
 
-// define openapi security scheme
+// define security schemes
+const APIKEY_HEADER = "X-API-KEY";
 app.openAPIRegistry.registerComponent("securitySchemes", "ApiKeyAuth", {
   type: "apiKey",
   in: "header",
-  name: "X-API-KEY",
+  name: APIKEY_HEADER,
+});
+
+const TOKEN_COOKIE = "SESSION-TOKEN";
+app.openAPIRegistry.registerComponent("securitySchemes", "SessionAuth", {
+  type: "apiKey",
+  in: "cookie",
+  name: TOKEN_COOKIE,
 });
 
 // ERROR HANDLING --------
@@ -65,6 +79,170 @@ app.onError((err, c) => {
       {
         error: responseTypes.server_error,
         messages: [err.message],
+      },
+      500
+    );
+  }
+});
+
+// ADMINS --------
+
+const getCurrentAdminRoute = createRoute({
+  method: "get",
+  path: "/admins/current",
+  summary: "Get information about the current authenticated admin user",
+  tags: ["Admins"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+  },
+  responses: {
+    200: {
+      description: "Authorized user retrieved successfully",
+      content: { "application/json": { schema: AdminUserResSchema } },
+    },
+    401: {
+      description: "Unauthorized",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    500: {
+      description: "Internal server error",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+  },
+});
+
+app.openapi(getCurrentAdminRoute, async (c) => {
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`Current admin request for ${token?.substring(0, 7)}...`);
+
+  try {
+    if (token) {
+      const { userId, sessionExpiresAt } = await adminSessions.find(token);
+
+      // make sure the session is valid and not expired
+      if (
+        userId &&
+        sessionExpiresAt &&
+        getUnixTime(new Date()) < sessionExpiresAt
+      ) {
+        const adminUser = await adminUsers.get(userId);
+        if (adminUser) {
+          return c.json(adminUser.user, 200);
+        } else {
+          return c.json(
+            {
+              error: responseTypes.unauthorized,
+              messages: ["Not authorized"],
+            },
+            401
+          );
+        }
+      } else {
+        return c.json(
+          {
+            error: responseTypes.unauthorized,
+            messages: [sessionExpiresAt ? "Session expired" : "Not authorized"],
+          },
+          401
+        );
+      }
+    } else {
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Not authorized"],
+        },
+        401
+      );
+    }
+  } catch (e) {
+    console.error("Get current admin user failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["Get admin user for session failed"],
+      },
+      500
+    );
+  }
+});
+
+const loginAdminRoute = createRoute({
+  method: "post",
+  path: "/admins/sessions",
+  summary: "Log in an admin user and get a session token",
+  tags: ["Admins"],
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: AdminLoginReqSchema } },
+    },
+  },
+  responses: {
+    201: {
+      description: "Session created successfully",
+      content: { "application/json": { schema: AdminUserResSchema } },
+    },
+    400: {
+      description: "Bad request",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    401: {
+      description: "Unauthorized",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    500: {
+      description: "Internal server error",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+  },
+});
+
+app.openapi(loginAdminRoute, async (c) => {
+  const { email, password } = c.req.valid("json");
+
+  console.info(`Login request for ${email}`);
+
+  try {
+    const admin = await adminUsers.find(email);
+    console.log("Found admin user", admin);
+
+    if (admin && (await pwVerify(admin.passwordHash, password))) {
+      // create the session
+      const sessionToken = sid();
+      const expiresAt = addDays(new Date(), 30);
+      await adminSessions.create(admin.user, sessionToken, expiresAt);
+
+      // set the cookie
+      setCookie(c, TOKEN_COOKIE, sessionToken, {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+        expires: expiresAt,
+      });
+
+      // send the response
+      return c.json(admin.user, 201);
+    } else {
+      // waste some more time to throttle
+      await pwHash(password);
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Invalid email or password"],
+        },
+        401
+      );
+    }
+  } catch (e) {
+    console.error("User login failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["Session creation failed"],
       },
       500
     );
