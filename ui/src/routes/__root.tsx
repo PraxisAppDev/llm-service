@@ -1,5 +1,10 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
+import { AuthState } from "@/contexts/auth";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import React, { Suspense } from "react";
+
+interface RouterCtx {
+  auth: AuthState;
+}
 
 const TanStackRouterDevtools = import.meta.env.PROD
   ? () => null // Render nothing in production
@@ -10,10 +15,10 @@ const TanStackRouterDevtools = import.meta.env.PROD
       }))
     );
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterCtx>()({
   component: () => (
     <>
-      <div className="p-2 flex gap-2">
+      {/* <div className="p-2 flex gap-2">
         <Link to="/" className="[&.active]:font-bold">
           Home
         </Link>{" "}
@@ -24,7 +29,7 @@ export const Route = createRootRoute({
           Login
         </Link>
       </div>
-      <hr />
+      <hr /> */}
       <Outlet />
       <Suspense>
         <TanStackRouterDevtools />
@@ -32,3 +37,25 @@ export const Route = createRootRoute({
     </>
   ),
 });
+
+function Root() {
+  const { auth } = Route.useRouteContext();
+
+  console.log("Root render", auth);
+
+  if (auth.user === undefined) {
+    return <Loading />;
+  } else {
+    return <Outlet />;
+  }
+}
+
+function Loading() {
+  return (
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <h1 className="text-xl text-center tracking-widest">Loading...</h1>
+      </div>
+    </div>
+  );
+}

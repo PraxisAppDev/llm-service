@@ -27,7 +27,7 @@ const dynamoToAdminUser = (item: Record<string, any>) => {
   const user: AdminUser = {
     id: item.userId as string,
     email: (item.recordId as string).split(SEP)[1],
-    name: item.name as string,
+    name: item.userName as string,
     createdAt: item.createdAt as string,
     updatedAt: item.updatedAt as string,
   };
@@ -40,7 +40,7 @@ const createAdminUser = async (user: AdminUser, passwordHash: string) => {
     Item: {
       userId: user.id,
       recordId: mkAuthId(user.email),
-      name: user.name,
+      userName: user.name,
       passwordHash,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -60,7 +60,7 @@ const findAdminUser = async (email: string) => {
       ":recId": mkAuthId(email),
     },
     ProjectionExpression:
-      "userId, recordId, name, passwordHash, createdAt, updatedAt",
+      "userId, recordId, userName, passwordHash, createdAt, updatedAt",
   });
 
   const response = await client.send(cmd);

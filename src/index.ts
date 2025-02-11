@@ -3,6 +3,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { addDays, getUnixTime } from "date-fns";
 import { handle } from "hono/aws-lambda";
 import { setCookie } from "hono/cookie";
+import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { authorize, pwHash, pwVerify, sid } from "./auth";
@@ -30,8 +31,20 @@ const app = new OpenAPIHono<{ Bindings: LambdaBindings }>({
   defaultHook: validationHook,
 });
 
-// user error logging
+// use error logging
 app.use(logger());
+
+// setup CORS
+// TODO make this more strict
+app.use(
+  "*",
+  cors({
+    origin: "*",
+    allowHeaders: ["*"],
+    allowMethods: ["*"],
+    credentials: true,
+  })
+);
 
 // define security schemes
 const APIKEY_HEADER = "X-API-KEY";

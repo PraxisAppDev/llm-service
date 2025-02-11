@@ -20,7 +20,7 @@ export default $config({
       globalIndexes: {
         AdminAuthIdx: {
           hashKey: "recordId",
-          projection: ["passwordHash", "createdAt", "updatedAt"],
+          projection: ["userName", "passwordHash", "createdAt", "updatedAt"],
         },
         AdminSessionIdx: {
           hashKey: "recordId",
