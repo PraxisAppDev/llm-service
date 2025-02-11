@@ -24,6 +24,7 @@ export const getCurrentAdmin = async () => {
   const response = await fetch(`${API_ROOT}/admins/current`, {
     method: "GET",
     headers: GET_HEADERS,
+    credentials: "include",
   });
 
   if (response.ok) {
@@ -51,6 +52,7 @@ export const createAdminSession = async (credentials: {
     method: "POST",
     headers: POST_HEADERS,
     body: JSON.stringify(credentials),
+    credentials: "include",
   });
 
   if (response.ok) {

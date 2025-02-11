@@ -1,10 +1,11 @@
 import { LoginForm } from "@/components/login-form";
+import { Route as indexRoute } from "@/routes/_auth.index";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 export const Route = createFileRoute("/login")({
   validateSearch: z.object({
-    redirect: z.string().default("/" /* TODO change this to a Route.to */),
+    redirect: z.string().default(indexRoute.to),
   }),
   component: Login,
 });

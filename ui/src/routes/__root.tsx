@@ -1,5 +1,6 @@
 import { AuthState } from "@/contexts/auth";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { LoaderCircle } from "lucide-react";
 import React, { Suspense } from "react";
 
 interface RouterCtx {
@@ -53,8 +54,9 @@ function Root() {
 function Loading() {
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
+      <div className="flex flex-col gap-6 w-full max-w-sm">
         <h1 className="text-xl text-center tracking-widest">Loading...</h1>
+        <LoaderCircle className="animate-spin" size={48} />
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { logger } from "hono/logger";
 import { authorize, pwHash, pwVerify, sid } from "./auth";
 import { LambdaBindings, responseTypes } from "./common";
 import { adminSessions, adminUsers } from "./db";
+import env from "./env";
 import { llm, MODELS } from "./llm";
 import { validationHook } from "./middleware";
 import {
@@ -34,17 +35,8 @@ const app = new OpenAPIHono<{ Bindings: LambdaBindings }>({
 // use error logging
 app.use(logger());
 
-// setup CORS
-// TODO make this more strict
-app.use(
-  "*",
-  cors({
-    origin: "*",
-    allowHeaders: ["*"],
-    allowMethods: ["*"],
-    credentials: true,
-  })
-);
+// setup CORS to make sure we respond to OPTIONS requests; API Gateway handles this for us outbound
+app.use("*", cors());
 
 // define security schemes
 const APIKEY_HEADER = "X-API-KEY";
@@ -231,9 +223,10 @@ app.openapi(loginAdminRoute, async (c) => {
       // set the cookie
       setCookie(c, TOKEN_COOKIE, sessionToken, {
         path: "/",
+        // TODO: in production set 'domain' to the root domain
         httpOnly: true,
         secure: true,
-        sameSite: "Lax",
+        sameSite: env.devMode ? "None" : "Lax",
         expires: expiresAt,
       });
 

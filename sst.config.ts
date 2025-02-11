@@ -30,7 +30,15 @@ export default $config({
     });
 
     // API
-    const api = new sst.aws.ApiGatewayV2("llm-gw");
+    const api = new sst.aws.ApiGatewayV2("llm-gw", {
+      cors: {
+        // TODO: set origins correctly for production once we have a domain
+        allowOrigins: ["http://localhost:5173", "https://*"],
+        allowMethods: ["*"],
+        allowHeaders: ["Accept", "Content-Type", "X-API-KEY"],
+        allowCredentials: true,
+      },
+    });
 
     api.route("ANY /{proxy+}", {
       handler: "src/index.handler",
@@ -50,6 +58,10 @@ export default $config({
       nodejs: {
         install: ["@node-rs/argon2"],
       },
+      environment: {
+        LLMSVC_STAGE: $app.stage,
+        LLMSVC_DEV_MODE: $dev ? "true" : "false",
+      },
     });
 
     // UI
@@ -66,6 +78,8 @@ export default $config({
       },
       environment: {
         VITE_LLMSVC_API_ROOT: api.url,
+        VITE_LLMSVC_STAGE: $app.stage,
+        VITE_LLMSVC_DEV_MODE: $dev ? "true" : "false",
       },
     });
 
