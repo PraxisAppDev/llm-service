@@ -145,6 +145,12 @@ export const GetModelReqSchema = z
   })
   .openapi("ModelRequestParams");
 
+export const LogoutReqParamsSchema = z
+  .object({
+    userId,
+  })
+  .openapi("LogoutRequestParams");
+
 // REQUEST BODIES --------
 
 export const AdminLoginReqSchema = z

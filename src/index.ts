@@ -2,7 +2,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { addDays, getUnixTime } from "date-fns";
 import { handle } from "hono/aws-lambda";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
@@ -22,6 +22,7 @@ import {
   CompletionResSchema,
   ErrorResSchema,
   GetModelReqSchema,
+  LogoutReqParamsSchema,
   ModelResSchema,
   ModelsResSchema,
 } from "./schemas";
@@ -122,33 +123,33 @@ app.openapi(getCurrentAdminRoute, async (c) => {
 
   console.info(`Current admin request for ${token?.substring(0, 7)}...`);
 
-  try {
-    if (token) {
-      const { userId, sessionExpiresAt } = await adminSessions.find(token);
+  if (!token) {
+    return c.json(
+      {
+        error: responseTypes.unauthorized,
+        messages: ["Not authorized"],
+      },
+      401
+    );
+  }
 
-      // make sure the session is valid and not expired
-      if (
-        userId &&
-        sessionExpiresAt &&
-        getUnixTime(new Date()) < sessionExpiresAt
-      ) {
-        const adminUser = await adminUsers.get(userId);
-        if (adminUser) {
-          return c.json(adminUser.user, 200);
-        } else {
-          return c.json(
-            {
-              error: responseTypes.unauthorized,
-              messages: ["Not authorized"],
-            },
-            401
-          );
-        }
+  try {
+    const { userId, sessionExpiresAt } = await adminSessions.find(token);
+
+    // make sure the session is valid and not expired
+    if (
+      userId &&
+      sessionExpiresAt &&
+      getUnixTime(new Date()) < sessionExpiresAt
+    ) {
+      const adminUser = await adminUsers.get(userId);
+      if (adminUser) {
+        return c.json(adminUser.user, 200);
       } else {
         return c.json(
           {
             error: responseTypes.unauthorized,
-            messages: [sessionExpiresAt ? "Session expired" : "Not authorized"],
+            messages: ["Not authorized"],
           },
           401
         );
@@ -157,7 +158,7 @@ app.openapi(getCurrentAdminRoute, async (c) => {
       return c.json(
         {
           error: responseTypes.unauthorized,
-          messages: ["Not authorized"],
+          messages: [sessionExpiresAt ? "Session expired" : "Not authorized"],
         },
         401
       );
@@ -177,7 +178,7 @@ app.openapi(getCurrentAdminRoute, async (c) => {
 const loginAdminRoute = createRoute({
   method: "post",
   path: "/admins/sessions",
-  summary: "Log in an admin user and get a session token",
+  summary: "Create a session for an admin user (login)",
   tags: ["Admins"],
   request: {
     body: {
@@ -244,7 +245,84 @@ app.openapi(loginAdminRoute, async (c) => {
       );
     }
   } catch (e) {
-    console.error("User login failed", e);
+    console.error("Admin login failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["Session creation failed"],
+      },
+      500
+    );
+  }
+});
+
+const logoutAdminRoute = createRoute({
+  method: "delete",
+  path: "/admins/{userId}/sessions",
+  summary: "Delete a session for an admin user (logout)",
+  tags: ["Admins"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    params: LogoutReqParamsSchema,
+    cookies: AuthorizedReqCookiesSchema,
+  },
+  responses: {
+    204: {
+      description: "Session deleted successfully",
+    },
+    400: {
+      description: "Bad request",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    401: {
+      description: "Unauthorized",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    500: {
+      description: "Internal server error",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+  },
+});
+
+app.openapi(logoutAdminRoute, async (c) => {
+  const { userId } = c.req.valid("param");
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`Logout request for ${userId} -> ${token?.substring(0, 7)}...`);
+
+  if (!token) {
+    return c.json(
+      {
+        error: responseTypes.unauthorized,
+        messages: ["Not authorized"],
+      },
+      401
+    );
+  }
+
+  try {
+    const { userId: sessionUid } = await adminSessions.find(token);
+
+    if (sessionUid && sessionUid === userId) {
+      // valid session that matches the given user ID; delete the session
+      await adminSessions.delete(userId, token);
+
+      // instruct the client to delete the session token cookie
+      deleteCookie(c, TOKEN_COOKIE);
+
+      return c.body(null, 204);
+    } else {
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Not authorized"],
+        },
+        401
+      );
+    }
+  } catch (e) {
+    console.error("Admin logout failed", e);
     return c.json(
       {
         error: responseTypes.server_error,

@@ -1,5 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
+  DeleteCommand,
   DynamoDBDocumentClient,
   PutCommand,
   QueryCommand,
@@ -146,7 +147,22 @@ const findAdminSession = async (token: string) => {
   }
 };
 
+const deleteAdminSession = async (userId: string, token: string) => {
+  const cmd = new DeleteCommand({
+    TableName: TABLE_NAME,
+    Key: {
+      userId,
+      recordId: mkSessionId(token),
+    },
+  });
+
+  const response = await client.send(cmd);
+
+  console.log("Delete admin session", response);
+};
+
 export const adminSessions = {
   create: createAdminSession,
   find: findAdminSession,
+  delete: deleteAdminSession,
 };
