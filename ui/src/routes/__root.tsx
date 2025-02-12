@@ -33,7 +33,7 @@ export const Route = createRootRouteWithContext<RouterCtx>()({
       <hr /> */}
       <Outlet />
       <Suspense>
-        <TanStackRouterDevtools />
+        <TanStackRouterDevtools initialIsOpen={false} position="bottom-right" />
       </Suspense>
     </>
   ),
