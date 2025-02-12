@@ -1,12 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_auth/")({
-  component: RouteComponent,
-  staticData: {
-    breadcrumbLabel: "LLM Service",
-  },
+  component: Dashboard,
 });
 
-function RouteComponent() {
+function Dashboard() {
   return <div>Dashboard page!</div>;
 }

@@ -20,6 +20,9 @@ export const Route = createFileRoute("/_auth")({
     }
   },
   component: AuthLayout,
+  staticData: {
+    breadcrumbLabel: "Afterhours LLM Service",
+  },
 });
 
 function AuthLayout() {

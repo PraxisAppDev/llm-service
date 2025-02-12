@@ -11,7 +11,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Route as indexRoute } from "@/routes/_auth.index";
+import { Route as adminsRoute } from "@/routes/_auth/admins";
+import { Route as indexRoute } from "@/routes/_auth/index";
+import { Route as usersRoute } from "@/routes/_auth/users";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { BrainCircuit, KeyRound, LayoutDashboard, UserCog } from "lucide-react";
 
@@ -23,7 +25,7 @@ const serviceItems = [
   },
   {
     title: "API Users",
-    url: "#",
+    url: usersRoute.to,
     icon: KeyRound,
   },
 ];
@@ -31,7 +33,7 @@ const serviceItems = [
 const adminItems = [
   {
     title: "Admin Users",
-    url: "#",
+    url: adminsRoute.to,
     icon: UserCog,
   },
 ];
@@ -87,11 +89,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={currentPath === item.url}
+                  >
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

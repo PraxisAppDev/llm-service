@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/login-form";
-import { Route as indexRoute } from "@/routes/_auth.index";
+import { Route as indexRoute } from "@/routes/_auth/index";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
