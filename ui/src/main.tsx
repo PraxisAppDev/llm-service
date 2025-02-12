@@ -1,14 +1,12 @@
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-
-console.log(`Got API root: ${import.meta.env.VITE_LLMSVC_API_ROOT}`);
-
-// Import the generated route tree
 import { AuthProvider } from "./contexts/auth";
 import { useAuth } from "./hooks";
+import "./index.css";
 import { routeTree } from "./routeTree.gen";
+
+console.log(`Got API root: ${import.meta.env.VITE_LLMSVC_API_ROOT}`);
 
 // Create a new router instance
 const router = createRouter({ routeTree, context: { auth: undefined! } });
@@ -24,6 +22,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function App() {
   const auth = useAuth();
   console.log("Main app render", auth);
