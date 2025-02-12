@@ -34,7 +34,7 @@ export default $config({
       cors: {
         // TODO: set origins correctly for production once we have a domain
         allowOrigins: ["http://localhost:5173", "https://*"],
-        allowMethods: ["*"],
+        allowMethods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
         allowHeaders: ["Accept", "Content-Type", "X-API-KEY"],
         allowCredentials: true,
       },

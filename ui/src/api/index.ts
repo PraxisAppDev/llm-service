@@ -71,3 +71,17 @@ export const createAdminSession = async (credentials: {
     };
   }
 };
+
+export const deleteAdminSession = async (userId: string) => {
+  const response = await fetch(`${API_ROOT}/admins/${userId}/sessions`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return { error: undefined };
+  } else {
+    const error = (await response.json()) as ApiError;
+    return { error };
+  }
+};

@@ -22,11 +22,11 @@ export function LoginForm({
   const isLoading = useRouterState({ select: (s) => s.isLoading });
   // const navigate = Route.useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginError, setLoginError] = useState("");
+  const [loginError, setLoginError] = useState<string | undefined>(undefined);
 
   const onFormSubmit = async (evt: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
-    setLoginError("");
+    setLoginError(undefined);
 
     try {
       evt.preventDefault();
@@ -49,6 +49,7 @@ export function LoginForm({
       }
     } catch (e) {
       console.error("Error logging in: ", e);
+      setLoginError("Unexpected login error!");
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +75,7 @@ export function LoginForm({
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="mail@example.com"
+                  placeholder="user@example.com"
                   autoComplete="username"
                   required
                   disabled={isBusy}
@@ -93,13 +94,15 @@ export function LoginForm({
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={isBusy}>
-                  {isBusy ? "Loading..." : "Login"}
+                  {isBusy ? "Logging in..." : "Login"}
                 </Button>
               </div>
             </div>
-            <div className="mt-4 text-center text-sm text-destructive">
-              {loginError}
-            </div>
+            {loginError && (
+              <div className="bg-destructive mt-4 p-1 rounded text-center text-sm text-destructive-foreground">
+                {loginError}
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

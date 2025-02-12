@@ -1,3 +1,4 @@
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Route as indexRoute } from "@/routes/_auth.index";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { BrainCircuit, KeyRound, LayoutDashboard, UserCog } from "lucide-react";
 
 const serviceItems = [
@@ -36,8 +37,9 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
-  const router = useRouter();
-  const currentPath = router.state.resolvedLocation?.pathname;
+  const currentPath = useRouterState({
+    select: (s) => s.resolvedLocation?.pathname,
+  });
 
   return (
     <Sidebar>
@@ -45,7 +47,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <Link to="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <BrainCircuit className="size-4" />
                 </div>
@@ -53,7 +55,7 @@ export function AppSidebar() {
                   <span className="font-semibold">Praxis Afterhours</span>
                   <span className="">LLM Service</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -97,7 +99,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter></SidebarFooter>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   );
 }

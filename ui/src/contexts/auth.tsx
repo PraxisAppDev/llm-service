@@ -1,4 +1,4 @@
-import { createAdminSession, getCurrentAdmin } from "@/api";
+import { createAdminSession, deleteAdminSession, getCurrentAdmin } from "@/api";
 import { LoaderCircle } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { AuthContext } from ".";
@@ -60,32 +60,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch((err) => console.error(`[AuthProvider] checkUser failed: ${err}`));
   }, []);
 
-  const login = useCallback(async (credentials: LoginParams) => {
-    try {
-      const { user, error } = await createAdminSession(credentials);
+  const login = useCallback(
+    async (credentials: LoginParams) => {
+      try {
+        const { user, error } = await createAdminSession(credentials);
 
-      if (user) {
-        console.info(
-          `[AuthProvider] Login successful! ${user.email} -> ${user.id}`
-        );
-        setUser(user);
-        return { ok: true, error: undefined };
-      } else {
-        console.info(`[AuthProvider] Login failed: ${error.messages[0]}`);
+        if (user) {
+          console.info(
+            `[AuthProvider] Login successful! ${user.email} -> ${user.id}`
+          );
+          setUser(user);
+          return { ok: true, error: undefined };
+        } else {
+          console.info(`[AuthProvider] Login failed: ${error.messages[0]}`);
+          setUser(null);
+          return { ok: false, error: error.messages[0] };
+        }
+      } catch (e) {
+        console.error("[AuthProvider] Error logging in", e);
         setUser(null);
-        return { ok: false, error: error.messages[0] };
+        return { ok: false, error: "Unexpected login error occured" };
       }
-    } catch (e) {
-      console.error("[AuthProvider] Error logging in", e);
-      setUser(null);
-      return { ok: false, error: "Unexpected login error occured" };
-    }
-  }, []);
+    },
+    [setUser]
+  );
 
   const logout = useCallback(async () => {
-    console.log("Logout request");
-    return { ok: false, error: "Logout not implemented!" };
-  }, []);
+    if (!user) return { ok: false, error: "Not currently logged in!" };
+
+    try {
+      const { error } = await deleteAdminSession(user.id);
+
+      if (error) {
+        console.info(`[AuthProvider] Logout failed: ${error.messages[0]}`);
+        return { ok: false, error: error.messages[0] };
+      } else {
+        console.info(
+          `[AuthProvider] Logout successful! ${user.email} -> ${user.id}`
+        );
+        setUser(null);
+        return { ok: true, error: undefined };
+      }
+    } catch (e) {
+      console.error("[AuthProvider] Error logging out", e);
+      return { ok: false, error: "Unexpected logout error occured" };
+    }
+  }, [user, setUser]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
