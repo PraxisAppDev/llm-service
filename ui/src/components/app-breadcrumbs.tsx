@@ -3,6 +3,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Link, useMatches } from "@tanstack/react-router";
@@ -44,13 +45,13 @@ export function AppBreadcrumbs() {
         {bcItems.map((item, idx, list) => (
           <Fragment key={item.href}>
             <BreadcrumbItem key={item.href} className="hidden md:block">
-              <BreadcrumbLink asChild>
-                {item.current ? (
-                  <div>{item.label}</div>
-                ) : (
+              {item.current ? (
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
                   <Link to={item.href}>{item.label}</Link>
-                )}
-              </BreadcrumbLink>
+                </BreadcrumbLink>
+              )}
             </BreadcrumbItem>
             {idx < list.length - 1 && <BreadcrumbSeparator />}
           </Fragment>
