@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/sidebar";
 import { UserAvatar } from "@/components/user-avatar";
 import { useAuth } from "@/hooks";
-import { useRouter } from "@tanstack/react-router";
 import {
   ChevronsDown,
   ChevronsRight,
@@ -24,7 +23,6 @@ import {
 import { useState } from "react";
 
 export function NavUser() {
-  const router = useRouter();
   const { user, logout } = useAuth();
   const { isMobile } = useSidebar();
   const [isWaiting, setIsWaiting] = useState(false);
@@ -38,8 +36,9 @@ export function NavUser() {
       evt.preventDefault();
       const result = await logout();
 
-      if (result.ok) {
-        await router.invalidate();
+      if (!result.ok) {
+        // TODO: do something with an error
+        setLogoutError(result.error || "Unknown logout failure");
       }
     } catch (e) {
       console.error("Error logging out: ", e);
@@ -88,28 +87,6 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator /> */}
             <DropdownMenuItem onSelect={onLogout} disabled={isWaiting}>
               {isWaiting ? (
                 <>

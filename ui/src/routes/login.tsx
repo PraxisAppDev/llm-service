@@ -8,9 +8,9 @@ export const Route = createFileRoute("/login")({
     if (context.auth.user) {
       // already logged in
       console.log(
-        `[Login] User is already logged in! Redirecting to ${search.redirect}`
+        `[Login] User is logged in! Redirecting to ${search.redirect}`
       );
-      // eslint-disable-next-line @typescript-eslint/only-throw-error
+
       throw redirect({ to: search.redirect || indexRoute.to });
     }
   },

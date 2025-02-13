@@ -8,5 +8,5 @@ export const Route = createFileRoute("/_auth/admins")({
 });
 
 function AdminUsers() {
-  return <div>Admin Users!</div>;
+  return <h2 className="border-b-0">Admins</h2>;
 }

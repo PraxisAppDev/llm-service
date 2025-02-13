@@ -1,5 +1,5 @@
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { StrictMode } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./contexts/auth";
 import { useAuth } from "./hooks";
@@ -25,7 +25,21 @@ declare module "@tanstack/react-router" {
 // eslint-disable-next-line react-refresh/only-export-components
 function App() {
   const auth = useAuth();
-  console.log("Main app render", auth);
+  const [isInvalidating, setIsInvalidating] = useState(false);
+
+  useEffect(() => {
+    console.log("Main app useEffect fired with auth:", auth);
+    if (!isInvalidating) {
+      console.log("Invalidating router");
+      setIsInvalidating(true);
+      router
+        .invalidate()
+        .then(() => setIsInvalidating(false))
+        .catch(() => setIsInvalidating(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
+
   return <RouterProvider router={router} context={{ auth }} />;
 }
 

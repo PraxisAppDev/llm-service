@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useRouter, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 
 export function LoginForm({
@@ -18,9 +18,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const auth = useAuth();
-  const router = useRouter();
   const isLoading = useRouterState({ select: (s) => s.isLoading });
-  // const navigate = Route.useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | undefined>(undefined);
 
@@ -41,11 +39,8 @@ export function LoginForm({
 
       const result = await auth.login({ email, password });
 
-      if (result.ok) {
-        await router.invalidate();
-        await router.navigate({ to: "/" }); // TODO change this to the redirect prop
-      } else {
-        setLoginError(result.error || "Unknown error!");
+      if (!result.ok) {
+        setLoginError(result.error || "Unknown login failure");
       }
     } catch (e) {
       console.error("Error logging in: ", e);
