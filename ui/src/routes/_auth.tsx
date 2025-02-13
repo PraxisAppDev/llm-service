@@ -35,7 +35,7 @@ function AuthLayout() {
           <div className="bg-border mr-2 w-[1px] h-4"></div>
           <AppBreadcrumbs />
         </header>
-        <div className="px-4 py-4">
+        <div className="px-4 py-8">
           <Outlet />
         </div>
       </SidebarInset>

@@ -8,5 +8,15 @@ export const Route = createFileRoute("/_auth/users")({
 });
 
 function ApiUsers() {
-  return <div>API Users!</div>;
+  return (
+    <>
+      <section>
+        <h1>API Users</h1>
+        <p>
+          API users can exercise LLM-related endpoints of the <em>LLM Service</em>&apos;s API using
+          their assigned API keys. API users cannot access this console.
+        </p>
+      </section>
+    </>
+  );
 }
