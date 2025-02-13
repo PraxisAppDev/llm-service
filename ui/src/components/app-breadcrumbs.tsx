@@ -44,7 +44,10 @@ export function AppBreadcrumbs() {
       <BreadcrumbList>
         {bcItems.map((item, idx, list) => (
           <Fragment key={item.href}>
-            <BreadcrumbItem key={item.href} className="hidden md:block">
+            <BreadcrumbItem
+              key={item.href}
+              className={item.current ? undefined : "hidden md:block"}
+            >
               {item.current ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               ) : (
@@ -53,7 +56,9 @@ export function AppBreadcrumbs() {
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
-            {idx < list.length - 1 && <BreadcrumbSeparator />}
+            {idx < list.length - 1 && (
+              <BreadcrumbSeparator className="hidden md:block" />
+            )}
           </Fragment>
         ))}
       </BreadcrumbList>
