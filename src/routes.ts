@@ -185,6 +185,10 @@ export const getModelRoute = createRoute({
       description: "Unauthorized",
       content: { "application/json": { schema: ErrorResSchema } },
     },
+    404: {
+      description: "Not found",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
     500: {
       description: "Internal server error",
       content: { "application/json": { schema: ErrorResSchema } },
@@ -221,6 +225,10 @@ export const completionsRoute = createRoute({
       description: "Unauthorized",
       content: { "application/json": { schema: ErrorResSchema } },
     },
+    404: {
+      description: "Not found",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
     500: {
       description: "Internal server error",
       content: { "application/json": { schema: ErrorResSchema } },
@@ -253,6 +261,10 @@ export const chatRoute = createRoute({
     },
     401: {
       description: "Unauthorized",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    404: {
+      description: "Not found",
       content: { "application/json": { schema: ErrorResSchema } },
     },
     500: {

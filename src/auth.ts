@@ -48,7 +48,16 @@ export const sid = () => {
   return buf.toString("base64");
 };
 
-export const authorizeToken = async (token: string) => {
+export const authorizeToken = async (token?: string) => {
+  // handle empty tokens
+  if (!token) {
+    return {
+      error: {
+        error: responseTypes.unauthorized,
+        messages: ["Not authorized"],
+      },
+    };
+  }
   // lookupt the token
   const { userId, sessionExpiresAt } = await adminSessions.find(token);
 
@@ -57,7 +66,6 @@ export const authorizeToken = async (token: string) => {
     if (getUnixTime(new Date()) >= sessionExpiresAt) {
       // session expired!
       return {
-        adminUser: undefined,
         error: {
           error: responseTypes.unauthorized,
           messages: ["Session expired"],
@@ -70,11 +78,10 @@ export const authorizeToken = async (token: string) => {
 
     if (adminUser) {
       // success! good authorization
-      return { adminUser: adminUser, error: undefined };
+      return { adminUser: adminUser };
     } else {
       // strange state mismatch (deleted user?)
       return {
-        adminUser: undefined,
         error: {
           error: responseTypes.unauthorized,
           messages: ["Not authorized"],
@@ -84,11 +91,30 @@ export const authorizeToken = async (token: string) => {
   } else {
     // session lookup failed
     return {
-      adminUser: undefined,
       error: {
         error: responseTypes.unauthorized,
         messages: ["Not authorized"],
       },
     };
   }
+};
+
+export const authorizeTokenOrKey = async (token?: string, apiKey?: string) => {
+  // try token first
+  const tok = await authorizeToken(token);
+
+  if (tok.adminUser) {
+    return {
+      user: tok.adminUser.user,
+    };
+  }
+
+  // TODO: try the api key
+
+  return {
+    error: {
+      error: responseTypes.unauthorized,
+      messages: ["Not authorized"],
+    },
+  };
 };

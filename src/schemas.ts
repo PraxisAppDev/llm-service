@@ -173,7 +173,7 @@ export const CompletionReqSchema = z
   })
   .openapi("CompletionRequest");
 
-export type CompletionReq = z.infer<typeof CompletionReqSchema>;
+export type CompletionRequest = z.infer<typeof CompletionReqSchema>;
 
 export const ChatReqSchema = z
   .object({
@@ -199,6 +199,8 @@ export const ChatReqSchema = z
     maxGenLen,
   })
   .openapi("ChatRequest");
+
+export type ChatRequest = z.infer<typeof ChatReqSchema>;
 
 // RESPONSES --------
 
