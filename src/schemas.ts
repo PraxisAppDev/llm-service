@@ -25,7 +25,7 @@ const email = z
 
 const sessionToken = z
   .string({ required_error: "Session token is required" })
-  .openapi({ description: "The user's session token" });
+  .openapi({ description: "The admin user's session token" });
 
 const createdAt = z
   .string({ required_error: "Created datetime is required" })
@@ -210,7 +210,7 @@ export const AdminUserResSchema = z
     createdAt,
     updatedAt,
   })
-  .openapi("AuthUserResponse");
+  .openapi("AdminUserResponse");
 
 export type AdminUser = z.infer<typeof AdminUserResSchema>;
 
@@ -244,7 +244,7 @@ export const ModelsResSchema = z
         .optional()
     ),
   })
-  .openapi("ModelsResponse");
+  .openapi("ListModelsResponse");
 
 export const ModelResSchema = z
   .object({
@@ -265,7 +265,7 @@ export const ErrorResSchema = z
     error: z.string().openapi({
       description: "The error description",
     }),
-    messages: z.array(z.string()).optional().openapi({
+    messages: z.array(z.string()).openapi({
       description: "Additional error context messages for end-user display",
     }),
   })
