@@ -120,7 +120,7 @@ const usage = z
 
 export const AuthorizedReqHeadersSchema = z
   .object({
-    "X-API-KEY": apiKey,
+    "X-API-KEY": apiKey.optional(),
   })
   .openapi("AuthorizedRequestHeaders");
 

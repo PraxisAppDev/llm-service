@@ -6,7 +6,7 @@ import { deleteCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
-import { authorize, authorizeToken, pwHash, pwVerify, sid } from "./auth";
+import { authorizeToken, pwHash, pwVerify, sid } from "./auth";
 import { LambdaBindings, responseTypes } from "./common";
 import { adminSessions, adminUsers } from "./db";
 import env from "./env";
@@ -387,9 +387,10 @@ const listModelsRoute = createRoute({
   path: "/models",
   summary: "Lists the currently available LLMs",
   tags: ["Models"],
-  security: [{ ApiKeyAuth: [] }],
+  security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {
     headers: AuthorizedReqHeadersSchema,
+    cookies: AuthorizedReqCookiesSchema,
   },
   responses: {
     200: {
@@ -412,15 +413,50 @@ const listModelsRoute = createRoute({
 });
 
 app.openapi(listModelsRoute, async (c) => {
-  const apiKey = c.req.valid("header")["X-API-KEY"];
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const apiKey = c.req.valid("header")[APIKEY_HEADER];
 
-  console.info(`Get request for models list with key ${apiKey}`);
+  console.info(
+    `List models request with token=${token?.substring(0, 7)} / key=${apiKey?.substring(0, 7)}`
+  );
 
-  const user = authorize(apiKey);
-
-  console.info(`Request authorized for user ${user.name} <${user.email}>`);
-
-  return c.json({ models: MODELS }, 200);
+  try {
+    if (token) {
+      const auth = await authorizeToken(token);
+      if (auth.adminUser) {
+        return c.json({ models: MODELS }, 200);
+      } else {
+        return c.json(auth.error, 401);
+      }
+    } else if (apiKey) {
+      // TODO: implement api key authorization
+      return c.json(
+        {
+          error: responseTypes.server_error,
+          messages: ["API key authorization implemented"],
+        },
+        500
+      );
+    } else {
+      // unauthorized
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Not authorized"],
+        },
+        401
+      );
+    }
+  } catch (e) {
+    console.error("List models failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["List models failed on the server"],
+      },
+      500
+    );
+  }
 });
 
 const getModelRoute = createRoute({
@@ -428,9 +464,10 @@ const getModelRoute = createRoute({
   path: "/models/{model}",
   summary: "Get basic information about a specific model",
   tags: ["Models"],
-  security: [{ ApiKeyAuth: [] }],
+  security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {
     headers: AuthorizedReqHeadersSchema,
+    cookies: AuthorizedReqCookiesSchema,
     params: GetModelReqSchema,
   },
   responses: {
@@ -454,14 +491,16 @@ const getModelRoute = createRoute({
 });
 
 app.openapi(getModelRoute, async (c) => {
-  const apiKey = c.req.valid("header")["X-API-KEY"];
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const apiKey = c.req.valid("header")[APIKEY_HEADER];
   const { model: modelId } = c.req.valid("param");
 
-  console.info(`Get request for model ${modelId} with key ${apiKey}`);
-
-  const user = authorize(apiKey);
-
-  console.info(`Request authorized for user ${user.name} <${user.email}>`);
+  console.info(
+    `Get model ${modelId} request with token=${token?.substring(0, 7)} / key=${apiKey?.substring(
+      0,
+      7
+    )}`
+  );
 
   const awsModelId = llm.getAwsModelId(modelId);
   if (!awsModelId) {
@@ -475,23 +514,47 @@ app.openapi(getModelRoute, async (c) => {
   }
 
   try {
-    const model = await llm.getModel(awsModelId);
+    if (token) {
+      const auth = await authorizeToken(token);
+      if (auth.adminUser) {
+        const model = await llm.getModel(awsModelId);
 
-    if (model) {
-      return c.json({ ...model, id: modelId }, 200);
-    } else {
-      console.error(`Get model returned no result for "${awsModelId}"!`);
+        if (model) {
+          return c.json({ ...model, id: modelId }, 200);
+        } else {
+          console.error(`Get model returned no result for "${awsModelId}"!`);
+          return c.json(
+            {
+              error: responseTypes.server_error,
+              messages: ["Model retrieval failed"],
+            },
+            500
+          );
+        }
+      } else {
+        return c.json(auth.error, 401);
+      }
+    } else if (apiKey) {
+      // TODO: implement api key authorization
       return c.json(
         {
           error: responseTypes.server_error,
-          messages: ["Model retrieval failed"],
+          messages: ["API key authorization implemented"],
         },
         500
+      );
+    } else {
+      // unauthorized
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Not authorized"],
+        },
+        401
       );
     }
   } catch (e) {
     console.error(`Get model failed for "${awsModelId}"`, e);
-
     return c.json(
       {
         error: responseTypes.server_error,
@@ -509,9 +572,10 @@ const completionsRoute = createRoute({
   path: "/completions",
   summary: "Creates a model completion for the given prompt",
   tags: ["Completions"],
-  security: [{ ApiKeyAuth: [] }],
+  security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {
     headers: AuthorizedReqHeadersSchema,
+    cookies: AuthorizedReqCookiesSchema,
     body: {
       required: true,
       content: { "application/json": { schema: CompletionReqSchema } },
@@ -538,14 +602,16 @@ const completionsRoute = createRoute({
 });
 
 app.openapi(completionsRoute, async (c) => {
-  const apiKey = c.req.valid("header")["X-API-KEY"];
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const apiKey = c.req.valid("header")[APIKEY_HEADER];
   const body = c.req.valid("json");
 
-  console.info(`Completion request for model ${body.model} with key ${apiKey}`);
-
-  const user = authorize(apiKey);
-
-  console.info(`Request authorized for user ${user.name} <${user.email}>`);
+  console.info(
+    `Completion request for model ${body.model} with token=${token?.substring(
+      0,
+      7
+    )} / key=${apiKey?.substring(0, 7)}`
+  );
 
   const awsModelId = llm.getAwsModelId(body.model);
   if (!awsModelId) {
@@ -559,30 +625,54 @@ app.openapi(completionsRoute, async (c) => {
   }
 
   try {
-    let gen = await llm.getCompletion(
-      awsModelId,
-      body.system,
-      body.prompt,
-      body.temperature,
-      body.topP,
-      body.maxGenLen
-    );
+    if (token) {
+      const auth = await authorizeToken(token);
+      if (auth.adminUser) {
+        let gen = await llm.getCompletion(
+          awsModelId,
+          body.system,
+          body.prompt,
+          body.temperature,
+          body.topP,
+          body.maxGenLen
+        );
 
-    return c.json(
-      {
-        model: body.model,
-        generation: gen.generation,
-        stopReason: gen.stopReason,
-        usage: {
-          inputTokens: gen.inputTokens,
-          outputTokens: gen.outputTokens,
+        return c.json(
+          {
+            model: body.model,
+            generation: gen.generation,
+            stopReason: gen.stopReason,
+            usage: {
+              inputTokens: gen.inputTokens,
+              outputTokens: gen.outputTokens,
+            },
+          },
+          200
+        );
+      } else {
+        return c.json(auth.error, 401);
+      }
+    } else if (apiKey) {
+      // TODO: implement api key authorization
+      return c.json(
+        {
+          error: responseTypes.server_error,
+          messages: ["API key authorization implemented"],
         },
-      },
-      200
-    );
+        500
+      );
+    } else {
+      // unauthorized
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Not authorized"],
+        },
+        401
+      );
+    }
   } catch (e) {
     console.error(`Get completion failed for "${awsModelId}"`, e);
-
     return c.json(
       {
         error: responseTypes.server_error,
@@ -600,9 +690,10 @@ const chatRoute = createRoute({
   path: "/chat/completions",
   summary: "Creates a model completion for the given chat conversation",
   tags: ["Chat"],
-  security: [{ ApiKeyAuth: [] }],
+  security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {
     headers: AuthorizedReqHeadersSchema,
+    cookies: AuthorizedReqCookiesSchema,
     body: {
       required: true,
       content: { "application/json": { schema: ChatReqSchema } },
@@ -629,14 +720,16 @@ const chatRoute = createRoute({
 });
 
 app.openapi(chatRoute, async (c) => {
-  const apiKey = c.req.valid("header")["X-API-KEY"];
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const apiKey = c.req.valid("header")[APIKEY_HEADER];
   const body = c.req.valid("json");
 
-  console.info(`Chat completion request for model ${body.model} with key ${apiKey}`);
-
-  const user = authorize(apiKey);
-
-  console.info(`Request authorized for user ${user.name} <${user.email}>`);
+  console.info(
+    `Chat completion request for model ${body.model} with token=${token?.substring(
+      0,
+      7
+    )} / key=${apiKey?.substring(0, 7)}`
+  );
 
   const awsModelId = llm.getAwsModelId(body.model);
   if (!awsModelId) {
@@ -650,30 +743,54 @@ app.openapi(chatRoute, async (c) => {
   }
 
   try {
-    let gen = await llm.getChatCompletion(
-      awsModelId,
-      body.system,
-      body.messages,
-      body.temperature,
-      body.topP,
-      body.maxGenLen
-    );
+    if (token) {
+      const auth = await authorizeToken(token);
+      if (auth.adminUser) {
+        let gen = await llm.getChatCompletion(
+          awsModelId,
+          body.system,
+          body.messages,
+          body.temperature,
+          body.topP,
+          body.maxGenLen
+        );
 
-    return c.json(
-      {
-        model: body.model,
-        generation: gen.generation,
-        stopReason: gen.stopReason,
-        usage: {
-          inputTokens: gen.inputTokens,
-          outputTokens: gen.outputTokens,
+        return c.json(
+          {
+            model: body.model,
+            generation: gen.generation,
+            stopReason: gen.stopReason,
+            usage: {
+              inputTokens: gen.inputTokens,
+              outputTokens: gen.outputTokens,
+            },
+          },
+          200
+        );
+      } else {
+        return c.json(auth.error, 401);
+      }
+    } else if (apiKey) {
+      // TODO: implement api key authorization
+      return c.json(
+        {
+          error: responseTypes.server_error,
+          messages: ["API key authorization implemented"],
         },
-      },
-      200
-    );
+        500
+      );
+    } else {
+      // unauthorized
+      return c.json(
+        {
+          error: responseTypes.unauthorized,
+          messages: ["Not authorized"],
+        },
+        401
+      );
+    }
   } catch (e) {
     console.error(`Get chat completion failed for "${awsModelId}"`, e);
-
     return c.json(
       {
         error: responseTypes.server_error,
