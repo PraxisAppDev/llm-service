@@ -1,3 +1,4 @@
+import { deleteAdminSession } from "@/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,40 +14,30 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { UserAvatar } from "@/components/user-avatar";
-import { useAuth } from "@/hooks";
-import {
-  ChevronsDown,
-  ChevronsRight,
-  LoaderCircle,
-  LogOut,
-} from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChevronsDown, ChevronsRight, LoaderCircle, LogOut } from "lucide-react";
 
 export function NavUser() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { isMobile } = useSidebar();
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [logoutError, setLogoutError] = useState<string | undefined>(undefined);
-
-  const onLogout = async (evt: Event) => {
-    setIsWaiting(true);
-    setLogoutError(undefined);
-
-    try {
-      evt.preventDefault();
-      const result = await logout();
-
-      if (!result.ok) {
-        // TODO: do something with an error
-        setLogoutError(result.error || "Unknown logout failure");
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => {
+      if (!user) {
+        throw new Error("Can't logout with no current user!");
       }
-    } catch (e) {
-      console.error("Error logging out: ", e);
-      setLogoutError("Unexpected logout error!");
-    } finally {
-      setIsWaiting(false);
-    }
-  };
+
+      return deleteAdminSession(user.id);
+    },
+    onError: (error) => {
+      console.info(`[AuthProvider] Logout failed: ${error.message}`);
+    },
+    onSuccess: () => {
+      console.info("[AuthProvider] Logout successful!");
+      queryClient.setQueryData(["currentUser"], null);
+    },
+  });
 
   if (!user) return null;
 
@@ -87,8 +78,14 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onLogout} disabled={isWaiting}>
-              {isWaiting ? (
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                void mutation.mutate();
+              }}
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? (
                 <>
                   <LoaderCircle className="animate-spin" />
                   Logging out...

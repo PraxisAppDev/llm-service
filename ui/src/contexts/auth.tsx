@@ -1,6 +1,6 @@
-import { createAdminSession, deleteAdminSession, getCurrentAdmin } from "@/api";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { AuthContext } from ".";
+import { getCurrentAdmin } from "@/api";
+import { useQuery } from "@tanstack/react-query";
+import { createContext, ReactNode } from "react";
 
 export interface User {
   id: string;
@@ -10,105 +10,35 @@ export interface User {
   updatedAt: string;
 }
 
-interface AuthResult {
-  ok: boolean;
-  error: string | undefined;
-}
-
-interface LoginParams {
-  email: string;
-  password: string;
-}
-
 export interface AuthState {
   user: User | null | undefined;
-  login: (params: LoginParams) => Promise<AuthResult>;
-  logout: () => Promise<AuthResult>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const AuthContext = createContext<AuthState>({
+  user: undefined,
+});
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const { isPending, isError, data, error } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCurrentAdmin,
+    staleTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
-  useEffect(() => {
-    const checkUser = async () => {
-      // request for "current" user should succeed if we have a valid cookie
-      try {
-        const { user, error } = await getCurrentAdmin();
+  let user: typeof data | null;
+  if (isPending) {
+    console.info("[AuthProvider] Fetching current admin user...");
+    user = undefined;
+  } else if (isError) {
+    console.error(`[AuthProvider] Error fetching current admin user: ${error?.message}`);
+    user = null;
+  } else {
+    console.info("[AuthProvider] Updating current admin user");
+    user = data;
+  }
 
-        if (user) {
-          console.info(
-            `[AuthProvider] Got current admin user ${user.email} -> ${user.id}`
-          );
-          setUser(user);
-        } else {
-          console.info(
-            `[AuthProvider] Failed to get current admin user: ${error.error}`
-          );
-          setUser(null);
-        }
-      } catch (e) {
-        console.error("[AuthProvider] Error fetching current admin user", e);
-        setUser(null);
-      }
-    };
-
-    checkUser()
-      .then(() =>
-        console.info("[AuthProvider] checkUser completed successfully")
-      )
-      .catch((err) => console.error(`[AuthProvider] checkUser failed: ${err}`));
-  }, []);
-
-  const login = useCallback(
-    async (credentials: LoginParams) => {
-      try {
-        const { user, error } = await createAdminSession(credentials);
-
-        if (user) {
-          console.info(
-            `[AuthProvider] Login successful! ${user.email} -> ${user.id}`
-          );
-          setUser(user);
-          return { ok: true, error: undefined };
-        } else {
-          console.info(`[AuthProvider] Login failed: ${error.messages[0]}`);
-          setUser(null);
-          return { ok: false, error: error.messages[0] };
-        }
-      } catch (e) {
-        console.error("[AuthProvider] Error logging in", e);
-        setUser(null);
-        return { ok: false, error: "Unexpected login error occured" };
-      }
-    },
-    [setUser]
-  );
-
-  const logout = useCallback(async () => {
-    if (!user) return { ok: false, error: "Not currently logged in!" };
-
-    try {
-      const { error } = await deleteAdminSession(user.id);
-
-      if (error) {
-        console.info(`[AuthProvider] Logout failed: ${error.messages[0]}`);
-        return { ok: false, error: error.messages[0] };
-      } else {
-        console.info(
-          `[AuthProvider] Logout successful! ${user.email} -> ${user.id}`
-        );
-        setUser(null);
-        return { ok: true, error: undefined };
-      }
-    } catch (e) {
-      console.error("[AuthProvider] Error logging out", e);
-      return { ok: false, error: "Unexpected logout error occured" };
-    }
-  }, [user, setUser]);
-
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
 }

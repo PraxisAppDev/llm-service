@@ -1,12 +1,16 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./contexts/auth";
-import { useAuth } from "./hooks";
+import { useAuth } from "./hooks/use-auth";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 
 console.log(`Got API root: ${import.meta.env.VITE_LLMSVC_API_ROOT}`);
+
+// Create a query client
+const queryClient = new QueryClient();
 
 // Create a new router instance
 const router = createRouter({ routeTree, context: { auth: undefined! } });
@@ -49,10 +53,12 @@ if (!rootElement.innerHTML) {
   const root = createRoot(rootElement);
   root.render(
     <StrictMode>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </QueryClientProvider>
+    </StrictMode>,
   );
 } else {
   console.error("Root mount point is not empty!");

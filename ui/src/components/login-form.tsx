@@ -1,56 +1,52 @@
+import { createAdminSession } from "@/api";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { formOptions, useForm } from "@tanstack/react-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  const auth = useAuth();
-  const isLoading = useRouterState({ select: (s) => s.isLoading });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginError, setLoginError] = useState<string | undefined>(undefined);
+const loginSchema = z.object({
+  email: z.string().email("You must enter a valid email address"),
+  password: z.string().nonempty("You must enter a password"),
+});
+type LoginParams = z.infer<typeof loginSchema>;
+const formOpts = formOptions<LoginParams>({
+  defaultValues: {
+    email: "",
+    password: "",
+  },
+});
 
-  const onFormSubmit = async (evt: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true);
-    setLoginError(undefined);
-
-    try {
-      evt.preventDefault();
-      evt.stopPropagation();
-      const data = new FormData(evt.currentTarget);
-      const email = data.get("email")?.toString();
-      const password = data.get("password")?.toString();
-
+export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: ({ email, password }: LoginParams) => {
       console.log("Login form submit: ", email, password);
+      return createAdminSession({ email, password });
+    },
+    onError: (error) => {
+      console.info(`[AuthProvider] Login failed: ${error.message}`);
+    },
+    onSuccess: (data) => {
+      console.info(`[AuthProvider] Login successful! ${data.email} -> ${data.id}`);
+      queryClient.setQueryData(["currentUser"], data);
+    },
+    retry: false,
+  });
+  const form = useForm({
+    ...formOpts,
+    validators: {
+      onChange: loginSchema,
+    },
+    onSubmit: ({ value }) => {
+      mutation.mutate(value);
+    },
+  });
 
-      if (!email || !password) return;
-
-      const result = await auth.login({ email, password });
-
-      if (!result.ok) {
-        setLoginError(result.error || "Unknown login failure");
-      }
-    } catch (e) {
-      console.error("Error logging in: ", e);
-      setLoginError("Unexpected login error!");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const isBusy = isLoading || isSubmitting;
+  const isBusy = form.state.isSubmitting || mutation.isPending;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -62,40 +58,72 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onFormSubmit}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              void form.handleSubmit();
+            }}
+          >
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="user@example.com"
-                  autoComplete="username"
-                  required
-                  disabled={isBusy}
-                />
+                <form.Field name="email">
+                  {(field) => (
+                    <>
+                      <Label htmlFor={field.name}>Email</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        type="email"
+                        placeholder="user@example.com"
+                        autoComplete="username"
+                        required
+                        disabled={isBusy}
+                      />
+                    </>
+                  )}
+                </form.Field>
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  disabled={isBusy}
-                />
+                <form.Field name="password">
+                  {(field) => (
+                    <>
+                      <Label htmlFor={field.name}>Password</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        disabled={isBusy}
+                      />
+                    </>
+                  )}
+                </form.Field>
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full" disabled={isBusy}>
-                  {isBusy ? "Logging in..." : "Login"}
-                </Button>
+                <form.Subscribe selector={(state) => [state.canSubmit, state.isPristine]}>
+                  {([canSubmit, isPristine]) => (
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isPristine || isBusy || !canSubmit}
+                    >
+                      {isBusy ? "Logging in..." : "Login"}
+                    </Button>
+                  )}
+                </form.Subscribe>
               </div>
             </div>
-            {loginError && (
+            {mutation.isError && (
               <div className="bg-destructive mt-4 p-1 rounded text-center text-sm text-destructive-foreground">
-                {loginError}
+                {mutation.error.message}
               </div>
             )}
           </form>

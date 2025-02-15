@@ -20,7 +20,7 @@ interface ApiError {
   messages: string[];
 }
 
-export const getCurrentAdmin = async () => {
+export const getCurrentAdmin = async (): Promise<AdminUser | undefined> => {
   const response = await fetch(`${API_ROOT}/admins/current`, {
     method: "GET",
     headers: GET_HEADERS,
@@ -28,26 +28,14 @@ export const getCurrentAdmin = async () => {
   });
 
   if (response.ok) {
-    const user = (await response.json()) as AdminUser;
-
-    return {
-      user,
-      error: undefined,
-    };
+    return (await response.json()) as AdminUser;
   } else {
     const error = (await response.json()) as ApiError;
-
-    return {
-      user: undefined,
-      error,
-    };
+    throw new Error(error.messages[0]);
   }
 };
 
-export const createAdminSession = async (credentials: {
-  email: string;
-  password: string;
-}) => {
+export const createAdminSession = async (credentials: { email: string; password: string }) => {
   const response = await fetch(`${API_ROOT}/admins/sessions`, {
     method: "POST",
     headers: POST_HEADERS,
@@ -56,19 +44,10 @@ export const createAdminSession = async (credentials: {
   });
 
   if (response.ok) {
-    const user = (await response.json()) as AdminUser;
-
-    return {
-      user,
-      error: undefined,
-    };
+    return (await response.json()) as AdminUser;
   } else {
     const error = (await response.json()) as ApiError;
-
-    return {
-      user: undefined,
-      error,
-    };
+    throw new Error(error.messages[0]);
   }
 };
 
@@ -78,10 +57,8 @@ export const deleteAdminSession = async (userId: string) => {
     credentials: "include",
   });
 
-  if (response.ok) {
-    return { error: undefined };
-  } else {
+  if (!response.ok) {
     const error = (await response.json()) as ApiError;
-    return { error };
+    throw new Error(error.messages[0]);
   }
 };
