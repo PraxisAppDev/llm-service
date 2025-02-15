@@ -1,18 +1,19 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { addDays, getUnixTime } from "date-fns";
+import { addDays } from "date-fns";
 import { handle } from "hono/aws-lambda";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
-import { authorize, pwHash, pwVerify, sid } from "./auth";
+import { authorize, authorizeToken, pwHash, pwVerify, sid } from "./auth";
 import { LambdaBindings, responseTypes } from "./common";
 import { adminSessions, adminUsers } from "./db";
 import env from "./env";
 import { llm, MODELS } from "./llm";
 import { validationHook } from "./middleware";
 import {
+  AdminListResSchema,
   AdminLoginReqSchema,
   AdminUserResSchema,
   AuthorizedReqCookiesSchema,
@@ -93,6 +94,74 @@ app.onError((err, c) => {
 
 // ADMINS --------
 
+const listAdminsRoute = createRoute({
+  method: "get",
+  path: "/admins",
+  summary: "Get a list of all admin users",
+  tags: ["Admins"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+  },
+  responses: {
+    200: {
+      description: "Admin users retrieved successfully",
+      content: { "application/json": { schema: AdminListResSchema } },
+    },
+    401: {
+      description: "Unauthorized",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+    500: {
+      description: "Internal server error",
+      content: { "application/json": { schema: ErrorResSchema } },
+    },
+  },
+});
+
+app.openapi(listAdminsRoute, async (c) => {
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`List admins request with token ${token?.substring(0, 7)}...`);
+
+  if (!token) {
+    return c.json(
+      {
+        error: responseTypes.unauthorized,
+        messages: ["Not authorized"],
+      },
+      401
+    );
+  }
+
+  try {
+    const auth = await authorizeToken(token);
+
+    if (auth.error) {
+      return c.json(auth.error, 401);
+    }
+
+    const admins = await adminUsers.list();
+
+    return c.json(
+      {
+        count: admins.length,
+        admins,
+      },
+      200
+    );
+  } catch (e) {
+    console.error("List admins failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["List admins failed"],
+      },
+      500
+    );
+  }
+});
+
 const getCurrentAdminRoute = createRoute({
   method: "get",
   path: "/admins/current",
@@ -134,34 +203,12 @@ app.openapi(getCurrentAdminRoute, async (c) => {
   }
 
   try {
-    const { userId, sessionExpiresAt } = await adminSessions.find(token);
+    const auth = await authorizeToken(token);
 
-    // make sure the session is valid and not expired
-    if (
-      userId &&
-      sessionExpiresAt &&
-      getUnixTime(new Date()) < sessionExpiresAt
-    ) {
-      const adminUser = await adminUsers.get(userId);
-      if (adminUser) {
-        return c.json(adminUser.user, 200);
-      } else {
-        return c.json(
-          {
-            error: responseTypes.unauthorized,
-            messages: ["Not authorized"],
-          },
-          401
-        );
-      }
+    if (auth.adminUser) {
+      return c.json(auth.adminUser.user, 200);
     } else {
-      return c.json(
-        {
-          error: responseTypes.unauthorized,
-          messages: [sessionExpiresAt ? "Session expired" : "Not authorized"],
-        },
-        401
-      );
+      return c.json(auth.error, 401);
     }
   } catch (e) {
     console.error("Get current admin user failed", e);
@@ -585,9 +632,7 @@ app.openapi(chatRoute, async (c) => {
   const apiKey = c.req.valid("header")["X-API-KEY"];
   const body = c.req.valid("json");
 
-  console.info(
-    `Chat completion request for model ${body.model} with key ${apiKey}`
-  );
+  console.info(`Chat completion request for model ${body.model} with key ${apiKey}`);
 
   const user = authorize(apiKey);
 

@@ -38,8 +38,7 @@ const updatedAt = z
   .string({ required_error: "Updated datetime is required" })
   .datetime({ message: "Invalid ISO 8601 updated datetime" })
   .openapi({
-    description:
-      "The date and time the record was last updated in ISO 8601 format",
+    description: "The date and time the record was last updated in ISO 8601 format",
   });
 
 const apiKey = z
@@ -50,12 +49,10 @@ const apiKey = z
     example: "36b8f84d-df4e-4d49-b662-bcde71a8764f",
   });
 
-const model = z
-  .string({ required_error: "Model identifier is required" })
-  .openapi({
-    description: "The identifier of an LLM",
-    example: "meta-llama3.3-70b",
-  });
+const model = z.string({ required_error: "Model identifier is required" }).openapi({
+  description: "The identifier of an LLM",
+  example: "meta-llama3.3-70b",
+});
 
 const modelName = z
   .string({ required_error: "Model name is required" })
@@ -86,8 +83,7 @@ const topP = z
   .max(1.0, "Top P must be <= 1")
   .default(0.9)
   .openapi({
-    description:
-      "Use a lower value to ignore less probable options. Set to 0 or 1.0 to disable.",
+    description: "Use a lower value to ignore less probable options. Set to 0 or 1.0 to disable.",
     default: 0.9,
   });
 
@@ -97,8 +93,7 @@ const maxGenLen = z
   .max(2048, "Max gen length must be <= 2048")
   .default(512)
   .openapi({
-    description:
-      "The maximum number of tokens to use in the generated response",
+    description: "The maximum number of tokens to use in the generated response",
     default: 512,
   });
 
@@ -196,8 +191,7 @@ export const ChatReqSchema = z
       )
       .nonempty()
       .openapi({
-        description:
-          "List of chat messages in order from oldest to most recent user prompt",
+        description: "List of chat messages in order from oldest to most recent user prompt",
       }),
     system,
     temperature,
@@ -219,6 +213,15 @@ export const AdminUserResSchema = z
   .openapi("AuthUserResponse");
 
 export type AdminUser = z.infer<typeof AdminUserResSchema>;
+
+export const AdminListResSchema = z
+  .object({
+    count: z.number().min(0).openapi({ description: "The number of admins returned" }),
+    admins: z
+      .array(AdminUserResSchema.optional())
+      .openapi({ description: "The list of admin users" }),
+  })
+  .openapi("ListAdminsResponse");
 
 export const CompletionResSchema = z
   .object({

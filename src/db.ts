@@ -4,6 +4,7 @@ import {
   DynamoDBDocumentClient,
   PutCommand,
   QueryCommand,
+  ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { getUnixTime } from "date-fns";
 import { Resource } from "sst";
@@ -60,8 +61,7 @@ const findAdminUser = async (email: string) => {
     ExpressionAttributeValues: {
       ":recId": mkAuthId(email),
     },
-    ProjectionExpression:
-      "userId, recordId, userName, passwordHash, createdAt, updatedAt",
+    ProjectionExpression: "userId, recordId, userName, passwordHash, createdAt, updatedAt",
   });
 
   const response = await client.send(cmd);
@@ -96,19 +96,46 @@ const getAdminUser = async (id: string) => {
   }
 };
 
+const listAdminUsers = async () => {
+  let startKey: Record<string, any> | undefined = undefined;
+  const results = [];
+
+  do {
+    const cmd: ScanCommand = new ScanCommand({
+      TableName: TABLE_NAME,
+      ExclusiveStartKey: startKey,
+      FilterExpression: "begins_with (recordId, :record)",
+      ExpressionAttributeValues: {
+        ":record": `${PREFIX_AUTH}${SEP}`,
+      },
+      ProjectionExpression: "userId, recordId, userName, passwordHash, createdAt, updatedAt",
+    });
+
+    const response = await client.send(cmd);
+    console.info("Scan admins", response);
+    startKey = response.LastEvaluatedKey;
+
+    if (response.Items) {
+      for (const item of response.Items) {
+        const record = dynamoToAdminUser(item);
+        results.push(record.user);
+      }
+    }
+  } while (startKey);
+
+  return results;
+};
+
 export const adminUsers = {
   create: createAdminUser,
   find: findAdminUser,
   get: getAdminUser,
+  list: listAdminUsers,
 };
 
 // ADMIN SESSIONS --------
 
-const createAdminSession = async (
-  user: AdminUser,
-  token: string,
-  expiresAt: Date
-) => {
+const createAdminSession = async (user: AdminUser, token: string, expiresAt: Date) => {
   const cmd = new PutCommand({
     TableName: TABLE_NAME,
     Item: {
