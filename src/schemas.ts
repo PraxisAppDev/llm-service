@@ -23,6 +23,13 @@ const email = z
     example: "user@example.com",
   });
 
+const password = z
+  .string({ required_error: "Password is required" })
+  .min(8, { message: "Password must be at least 8 characters" })
+  .openapi({
+    description: "The user's password (at least 8 characters)",
+  });
+
 const sessionToken = z
   .string({ required_error: "Session token is required" })
   .openapi({ description: "The admin user's session token" });
@@ -148,15 +155,20 @@ export const LogoutReqParamsSchema = z
 
 // REQUEST BODIES --------
 
+export const CreateAdminReqSchema = z
+  .object({
+    name: userName,
+    email,
+    password,
+  })
+  .openapi("CreateAdminRequest");
+
+export type CreateAdminRequest = z.infer<typeof CreateAdminReqSchema>;
+
 export const AdminLoginReqSchema = z
   .object({
     email,
-    password: z
-      .string({ required_error: "Password is required" })
-      .min(8, { message: "Password must be at least 8 characters" })
-      .openapi({
-        description: "The user's password (at least 8 characters)",
-      }),
+    password,
   })
   .openapi("AdminLoginRequest");
 

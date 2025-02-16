@@ -8,12 +8,30 @@ import {
   ChatReqSchema,
   CompletionReqSchema,
   CompletionResSchema,
+  CreateAdminReqSchema,
   ErrorResSchema,
   GetModelReqSchema,
   LogoutReqParamsSchema,
   ModelResSchema,
   ModelsResSchema,
 } from "./schemas";
+
+const RES_400 = {
+  description: "Bad request",
+  content: { "application/json": { schema: ErrorResSchema } },
+};
+const RES_401 = {
+  description: "Unauthorized",
+  content: { "application/json": { schema: ErrorResSchema } },
+};
+const RES_404 = {
+  description: "Not found",
+  content: { "application/json": { schema: ErrorResSchema } },
+};
+const RES_500 = {
+  description: "Internal server error",
+  content: { "application/json": { schema: ErrorResSchema } },
+};
 
 // ADMINS --------
 
@@ -31,14 +49,31 @@ export const listAdminsRoute = createRoute({
       description: "Admin users retrieved successfully",
       content: { "application/json": { schema: AdminListResSchema } },
     },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
+export const createAdminRoute = createRoute({
+  method: "post",
+  path: "/admins",
+  summary: "Create a new admin user",
+  tags: ["Admins"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+    body: {
+      content: { "application/json": { schema: CreateAdminReqSchema } },
     },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
+  },
+  responses: {
+    201: {
+      description: "Admin user created successfully",
+      content: { "application/json": { schema: AdminUserResSchema } },
     },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
   },
 });
 
@@ -56,14 +91,8 @@ export const getCurrentAdminRoute = createRoute({
       description: "Authorized user retrieved successfully",
       content: { "application/json": { schema: AdminUserResSchema } },
     },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    401: RES_401,
+    500: RES_500,
   },
 });
 
@@ -85,18 +114,9 @@ export const loginAdminRoute = createRoute({
       description: "Session created successfully",
       content: { "application/json": { schema: AdminUserResSchema } },
     },
-    400: {
-      description: "Bad request",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
   },
 });
 
@@ -114,18 +134,9 @@ export const logoutAdminRoute = createRoute({
     204: {
       description: "Session deleted successfully",
     },
-    400: {
-      description: "Bad request",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
   },
 });
 
@@ -146,18 +157,9 @@ export const listModelsRoute = createRoute({
       description: "Models retrieved successfully",
       content: { "application/json": { schema: ModelsResSchema } },
     },
-    400: {
-      description: "Bad request",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
   },
 });
 
@@ -177,22 +179,10 @@ export const getModelRoute = createRoute({
       description: "Model retrieved successfully",
       content: { "application/json": { schema: ModelResSchema } },
     },
-    400: {
-      description: "Bad request",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    404: {
-      description: "Not found",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    400: RES_400,
+    401: RES_401,
+    404: RES_404,
+    500: RES_500,
   },
 });
 
@@ -217,22 +207,10 @@ export const completionsRoute = createRoute({
       description: "Completion generated successfully",
       content: { "application/json": { schema: CompletionResSchema } },
     },
-    400: {
-      description: "Bad request",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    404: {
-      description: "Not found",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    400: RES_400,
+    401: RES_401,
+    404: RES_404,
+    500: RES_500,
   },
 });
 
@@ -255,21 +233,9 @@ export const chatRoute = createRoute({
       description: "Completion generated successfully",
       content: { "application/json": { schema: CompletionResSchema } },
     },
-    400: {
-      description: "Bad request",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    401: {
-      description: "Unauthorized",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    404: {
-      description: "Not found",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
-    500: {
-      description: "Internal server error",
-      content: { "application/json": { schema: ErrorResSchema } },
-    },
+    400: RES_400,
+    401: RES_401,
+    404: RES_404,
+    500: RES_500,
   },
 });

@@ -5,7 +5,7 @@ import { deleteCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
-import { currentAdmin, listAdmins, loginAdmin, logoutAdmin } from "./api/admins";
+import { createAdmin, currentAdmin, listAdmins, loginAdmin, logoutAdmin } from "./api/admins";
 import { chatCompletion, completion } from "./api/completions";
 import { getModel, listModels } from "./api/models";
 import { LambdaBindings, responseTypes } from "./common";
@@ -14,6 +14,7 @@ import { validationHook } from "./middleware";
 import {
   chatRoute,
   completionsRoute,
+  createAdminRoute,
   getCurrentAdminRoute,
   getModelRoute,
   listAdminsRoute,
@@ -107,6 +108,32 @@ app.openapi(listAdminsRoute, async (c) => {
       {
         error: responseTypes.server_error,
         messages: ["List admins failed"],
+      },
+      500
+    );
+  }
+});
+
+app.openapi(createAdminRoute, async (c) => {
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const body = c.req.valid("json");
+
+  console.info(`Create admin request for ${body.email} from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await createAdmin(body, token);
+
+    if (result.admin) {
+      return c.json(result.admin, 201);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Create admin failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["Create admin failed unexpectedly"],
       },
       500
     );

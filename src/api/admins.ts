@@ -1,7 +1,8 @@
 import { addDays } from "date-fns";
-import { authorizeToken, pwHash, pwVerify, sid } from "../auth";
+import { authorizeToken, pwHash, pwVerify, sid, uid } from "../auth";
 import { responseTypes } from "../common";
 import { adminSessions, adminUsers } from "../db";
+import { CreateAdminRequest } from "../schemas";
 
 export const listAdmins = async (token?: string) => {
   const auth = await authorizeToken(token);
@@ -20,6 +21,47 @@ export const listAdmins = async (token?: string) => {
       count: admins.length,
       admins,
     },
+  };
+};
+
+export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  const existingUser = await adminUsers.find(req.email);
+
+  if (existingUser) {
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: [`User with email ${req.email} already exists`],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
+
+  const id = uid();
+  const pwh = await pwHash(req.password);
+  const now = new Date().toISOString();
+
+  const admin = {
+    id,
+    name: req.name,
+    email: req.email,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await adminUsers.create(admin, pwh);
+
+  return {
+    admin,
   };
 };
 
