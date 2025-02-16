@@ -7,7 +7,7 @@ const POST_HEADERS = {
   "Content-Type": "application/json",
 };
 
-interface AdminUser {
+export interface AdminUser {
   id: string;
   name: string;
   email: string;
@@ -15,10 +15,30 @@ interface AdminUser {
   updatedAt: string;
 }
 
+interface AdminList {
+  count: number;
+  admins: AdminUser[];
+}
+
 interface ApiError {
   error: string;
   messages: string[];
 }
+
+export const getAdmins = async () => {
+  const response = await fetch(`${API_ROOT}/admins`, {
+    method: "GET",
+    headers: GET_HEADERS,
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as AdminList;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
 
 export const getCurrentAdmin = async (): Promise<AdminUser | undefined> => {
   const response = await fetch(`${API_ROOT}/admins/current`, {
