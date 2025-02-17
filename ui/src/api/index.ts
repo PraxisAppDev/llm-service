@@ -40,6 +40,22 @@ export const getAdmins = async () => {
   }
 };
 
+export const createAdmin = async (params: { name: string; email: string; password: string }) => {
+  const response = await fetch(`${API_ROOT}/admins`, {
+    method: "POST",
+    headers: POST_HEADERS,
+    body: JSON.stringify(params),
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as AdminUser;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
 export const getCurrentAdmin = async (): Promise<AdminUser | undefined> => {
   const response = await fetch(`${API_ROOT}/admins/current`, {
     method: "GET",

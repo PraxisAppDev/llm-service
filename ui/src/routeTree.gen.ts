@@ -17,6 +17,7 @@ import { Route as AuthImport } from './routes/_auth'
 import { Route as AuthIndexImport } from './routes/_auth/index'
 import { Route as AuthUsersImport } from './routes/_auth/users'
 import { Route as AuthAdminsImport } from './routes/_auth/admins'
+import { Route as AuthAdminsNewImport } from './routes/_auth/admins.new'
 
 // Create/Update Routes
 
@@ -53,6 +54,12 @@ const AuthAdminsRoute = AuthAdminsImport.update({
   id: '/admins',
   path: '/admins',
   getParentRoute: () => AuthRoute,
+} as any)
+
+const AuthAdminsNewRoute = AuthAdminsNewImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthAdminsRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -101,19 +108,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexImport
       parentRoute: typeof AuthImport
     }
+    '/_auth/admins/new': {
+      id: '/_auth/admins/new'
+      path: '/new'
+      fullPath: '/admins/new'
+      preLoaderRoute: typeof AuthAdminsNewImport
+      parentRoute: typeof AuthAdminsImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface AuthAdminsRouteChildren {
+  AuthAdminsNewRoute: typeof AuthAdminsNewRoute
+}
+
+const AuthAdminsRouteChildren: AuthAdminsRouteChildren = {
+  AuthAdminsNewRoute: AuthAdminsNewRoute,
+}
+
+const AuthAdminsRouteWithChildren = AuthAdminsRoute._addFileChildren(
+  AuthAdminsRouteChildren,
+)
+
 interface AuthRouteChildren {
-  AuthAdminsRoute: typeof AuthAdminsRoute
+  AuthAdminsRoute: typeof AuthAdminsRouteWithChildren
   AuthUsersRoute: typeof AuthUsersRoute
   AuthIndexRoute: typeof AuthIndexRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
-  AuthAdminsRoute: AuthAdminsRoute,
+  AuthAdminsRoute: AuthAdminsRouteWithChildren,
   AuthUsersRoute: AuthUsersRoute,
   AuthIndexRoute: AuthIndexRoute,
 }
@@ -124,17 +150,19 @@ export interface FileRoutesByFullPath {
   '': typeof AuthRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/admins': typeof AuthAdminsRoute
+  '/admins': typeof AuthAdminsRouteWithChildren
   '/users': typeof AuthUsersRoute
   '/': typeof AuthIndexRoute
+  '/admins/new': typeof AuthAdminsNewRoute
 }
 
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/admins': typeof AuthAdminsRoute
+  '/admins': typeof AuthAdminsRouteWithChildren
   '/users': typeof AuthUsersRoute
   '/': typeof AuthIndexRoute
+  '/admins/new': typeof AuthAdminsNewRoute
 }
 
 export interface FileRoutesById {
@@ -142,16 +170,24 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
-  '/_auth/admins': typeof AuthAdminsRoute
+  '/_auth/admins': typeof AuthAdminsRouteWithChildren
   '/_auth/users': typeof AuthUsersRoute
   '/_auth/': typeof AuthIndexRoute
+  '/_auth/admins/new': typeof AuthAdminsNewRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/about' | '/login' | '/admins' | '/users' | '/'
+  fullPaths:
+    | ''
+    | '/about'
+    | '/login'
+    | '/admins'
+    | '/users'
+    | '/'
+    | '/admins/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/login' | '/admins' | '/users' | '/'
+  to: '/about' | '/login' | '/admins' | '/users' | '/' | '/admins/new'
   id:
     | '__root__'
     | '/_auth'
@@ -160,6 +196,7 @@ export interface FileRouteTypes {
     | '/_auth/admins'
     | '/_auth/users'
     | '/_auth/'
+    | '/_auth/admins/new'
   fileRoutesById: FileRoutesById
 }
 
@@ -206,7 +243,10 @@ export const routeTree = rootRoute
     },
     "/_auth/admins": {
       "filePath": "_auth/admins.tsx",
-      "parent": "/_auth"
+      "parent": "/_auth",
+      "children": [
+        "/_auth/admins/new"
+      ]
     },
     "/_auth/users": {
       "filePath": "_auth/users.tsx",
@@ -215,6 +255,10 @@ export const routeTree = rootRoute
     "/_auth/": {
       "filePath": "_auth/index.tsx",
       "parent": "/_auth"
+    },
+    "/_auth/admins/new": {
+      "filePath": "_auth/admins.new.tsx",
+      "parent": "/_auth/admins"
     }
   }
 }

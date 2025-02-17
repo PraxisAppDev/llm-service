@@ -1,10 +1,13 @@
 import { AdminUser, getAdmins } from "@/api";
+import { TableSkeleton } from "@/components/app-skeletons";
 import { DataTable } from "@/components/data-table";
+import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/user-avatar";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, fromUnixTime, getUnixTime, parseISO } from "date-fns";
+import { CirclePlus } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/admins")({
   component: AdminUsers,
@@ -47,8 +50,15 @@ function AdminUsers() {
 
   return (
     <>
-      <section>
-        <h1>Admins</h1>
+      <section className="typography">
+        <header className="flex justify-between">
+          <h1>Admins</h1>
+          <Button asChild>
+            <Link from={Route.fullPath} to="new">
+              <CirclePlus /> Create admin
+            </Link>
+          </Button>
+        </header>
         <p>
           Admin users can log into this console to manage the <em>LLM Service</em>&apos;s
           components, including: available models, API users and their API keys, and admin users
@@ -56,19 +66,18 @@ function AdminUsers() {
         </p>
       </section>
       <section className="mt-10">
-        {isPending && <div className="p-4 flex justify-center">Loading...</div>}
+        <p className="text-xl text-muted-foreground pb-4">
+          {data ? `Found ${data.count} admins` : "Loading admins..."}
+        </p>
+        {isPending && <TableSkeleton />}
         {isError && (
           <div className="p-4 rounded-xl bg-destructive text-destructive-foreground text-center">
             {`Unable to retrieve admin list: ${error.message}`}
           </div>
         )}
-        {data && (
-          <>
-            <p className="text-xl text-muted-foreground pb-4">Found {data.count} admins</p>
-            <DataTable columns={columns} data={data.admins} />
-          </>
-        )}
+        {data && <DataTable columns={columns} data={data.admins} />}
       </section>
+      <Outlet />
     </>
   );
 }

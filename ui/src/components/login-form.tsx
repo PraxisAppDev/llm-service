@@ -23,15 +23,16 @@ const formOpts = formOptions<LoginParams>({
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
+    mutationKey: ["login"],
     mutationFn: ({ email, password }: LoginParams) => {
       console.log("Login form submit: ", email, password);
       return createAdminSession({ email, password });
     },
     onError: (error) => {
-      console.info(`[AuthProvider] Login failed: ${error.message}`);
+      console.info(`[Login] Login failed: ${error.message}`);
     },
     onSuccess: (data) => {
-      console.info(`[AuthProvider] Login successful! ${data.email} -> ${data.id}`);
+      console.info(`[Login] Login successful! ${data.email} -> ${data.id}`);
       queryClient.setQueryData(["currentUser"], data);
     },
     retry: false,
