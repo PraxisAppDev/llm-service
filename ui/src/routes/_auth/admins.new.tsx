@@ -28,13 +28,6 @@ const createAdminSchema = z.object({
   password: z.string().nonempty(),
 });
 type CreateAdminParams = z.infer<typeof createAdminSchema>;
-// const formOpts = formOptions<CreateAdminParams>({
-//   defaultValues: {
-//     email: "",
-//     name: "",
-//     password: tempPassword(8),
-//   },
-// });
 
 function CreateAdmin() {
   const queryClient = useQueryClient();
@@ -53,7 +46,7 @@ function CreateAdmin() {
     },
     onSuccess: (data) => {
       console.info(`Create admin successful! ${data.email} -> ${data.id}`);
-      toast.success("New admin created successfully!", { duration: 60 * 6 * 1000 });
+      toast.success("New admin created successfully!");
       void queryClient.invalidateQueries({ queryKey: ["admins"] });
       setOpen(false);
       goBack();
@@ -161,6 +154,11 @@ function CreateAdmin() {
               </form.Field>
             </div>
           </div>
+          {mutation.isError && (
+            <div className="bg-destructive mt-4 p-1 rounded text-center text-sm text-destructive-foreground">
+              {mutation.error.message}
+            </div>
+          )}
         </form>
         <DialogFooter>
           <form.Subscribe selector={(state) => [state.canSubmit, state.isPristine]}>

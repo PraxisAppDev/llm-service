@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, fromUnixTime, getUnixTime, parseISO } from "date-fns";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, Pencil, RectangleEllipsis, Trash } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/admins")({
   component: AdminUsers,
@@ -39,7 +39,34 @@ const columns = [
     header: "Updated",
     cell: (props) => <span>{format(fromUnixTime(props.getValue()), "PPp")}</span>,
   }),
+  columnHelper.display({
+    id: "actions",
+    cell: ({ row }) => <RowActions user={row.original} />,
+  }),
 ];
+
+function RowActions({ user }: { user: AdminUser }) {
+  const { auth } = Route.useRouteContext();
+  return (
+    <div className="flex justify-end gap-2">
+      {user.id === auth.user?.id && (
+        <>
+          <Button variant="outline" size="icon" title="Edit account details">
+            <Pencil />
+          </Button>
+          <Button variant="outline" size="icon" title="Change password">
+            <RectangleEllipsis />
+          </Button>
+        </>
+      )}
+      {user.id !== auth.user?.id && (
+        <Button variant="outline" size="icon" title="Delete admin">
+          <Trash className="text-destructive" />
+        </Button>
+      )}
+    </div>
+  );
+}
 
 function AdminUsers() {
   const { isPending, isError, data, error } = useQuery({

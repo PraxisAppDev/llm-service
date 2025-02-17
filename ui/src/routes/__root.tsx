@@ -45,7 +45,7 @@ function Root() {
         />
       </Suspense>
       <Suspense>
-        <footer className="fixed right-[8px] bottom-[48px] z-[1000]">
+        <footer className="fixed right-[8px] bottom-[48px] z-[99998]">
           <TanStackQueryDevtools
             initialIsOpen={false}
             position="bottom"

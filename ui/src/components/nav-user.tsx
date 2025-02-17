@@ -17,6 +17,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronsDown, ChevronsRight, LoaderCircle, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 export function NavUser() {
   const { user } = useAuth();
@@ -32,9 +33,11 @@ export function NavUser() {
     },
     onError: (error) => {
       console.info(`[AuthProvider] Logout failed: ${error.message}`);
+      toast.error(`Logout failed: ${error.message}`);
     },
     onSuccess: () => {
       console.info("[AuthProvider] Logout successful!");
+      toast.success("You have successfully logged out");
       queryClient.setQueryData(["currentUser"], null);
     },
   });
