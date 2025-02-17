@@ -1,9 +1,9 @@
-import { AdminUser, getAdmins } from "@/api";
+import { AdminUser } from "@/api";
 import { TableSkeleton } from "@/components/app-skeletons";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/user-avatar";
-import { useQuery } from "@tanstack/react-query";
+import { useAdmins } from "@/hooks/use-admins";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, fromUnixTime, getUnixTime, parseISO } from "date-fns";
@@ -51,17 +51,28 @@ function RowActions({ user }: { user: AdminUser }) {
     <div className="flex justify-end gap-2">
       {user.id === auth.user?.id && (
         <>
-          <Button variant="outline" size="icon" title="Edit account details">
-            <Pencil />
+          <Button variant="outline" size="icon" title="Edit account details" asChild>
+            <Link from={Route.fullPath} to="$adminId/edit" params={{ adminId: user.id }} replace>
+              <Pencil />
+            </Link>
           </Button>
-          <Button variant="outline" size="icon" title="Change password">
-            <RectangleEllipsis />
+          <Button variant="outline" size="icon" title="Change password" asChild>
+            <Link
+              from={Route.fullPath}
+              to="$adminId/changepw"
+              params={{ adminId: user.id }}
+              replace
+            >
+              <RectangleEllipsis />
+            </Link>
           </Button>
         </>
       )}
       {user.id !== auth.user?.id && (
-        <Button variant="outline" size="icon" title="Delete admin">
-          <Trash className="text-destructive" />
+        <Button variant="outline" size="icon" title="Delete admin" asChild>
+          <Link from={Route.fullPath} to="$adminId/delete" params={{ adminId: user.id }} replace>
+            <Trash className="text-destructive" />
+          </Link>
         </Button>
       )}
     </div>
@@ -69,11 +80,7 @@ function RowActions({ user }: { user: AdminUser }) {
 }
 
 function AdminUsers() {
-  const { isPending, isError, data, error } = useQuery({
-    queryKey: ["admins"],
-    queryFn: getAdmins,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { isPending, isError, data, error } = useAdmins();
 
   return (
     <>
