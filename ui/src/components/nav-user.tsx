@@ -16,12 +16,21 @@ import {
 import { UserAvatar } from "@/components/user-avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronsDown, ChevronsRight, LoaderCircle, LogOut } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  ChevronsDown,
+  ChevronsRight,
+  LoaderCircle,
+  LogOut,
+  Pencil,
+  RectangleEllipsis,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export function NavUser() {
   const { user } = useAuth();
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => {
@@ -80,6 +89,21 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() =>
+                void navigate({ to: "/admins/$adminId/edit", params: { adminId: user.id } })
+              }
+            >
+              <Pencil /> Edit account
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() =>
+                void navigate({ to: "/admins/$adminId/changepw", params: { adminId: user.id } })
+              }
+            >
+              <RectangleEllipsis /> Change password
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={(e) => {

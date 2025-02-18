@@ -51,7 +51,7 @@ function RowActions({ user }: { user: AdminUser }) {
     <div className="flex justify-end gap-2">
       {user.id === auth.user?.id && (
         <>
-          <Button variant="outline" size="icon" title="Edit account details" asChild>
+          <Button variant="outline" size="icon" title="Edit account info" asChild>
             <Link from={Route.fullPath} to="$adminId/edit" params={{ adminId: user.id }} replace>
               <Pencil />
             </Link>

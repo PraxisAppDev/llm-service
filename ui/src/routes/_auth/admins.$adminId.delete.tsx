@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAdmins } from "@/hooks/use-admins";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_auth/admins/$adminId/delete")({
   component: DeleteAdmin,
 });
 
 function DeleteAdmin() {
+  const [open, setOpen] = useState(true);
   const navigate = Route.useNavigate();
   const goBack = useCallback(() => {
     setTimeout(() => void navigate({ from: Route.fullPath, to: "/admins", replace: true }), 150);
@@ -86,8 +87,9 @@ function DeleteAdmin() {
 
   return (
     <AlertDialog
-      defaultOpen
+      open={open}
       onOpenChange={(open) => {
+        setOpen(open);
         if (!open) goBack();
       }}
     >

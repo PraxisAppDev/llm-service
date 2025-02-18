@@ -71,7 +71,11 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={currentPath === item.url}
+                    isActive={
+                      item.url === "/"
+                        ? currentPath === item.url
+                        : currentPath?.startsWith(item.url)
+                    }
                   >
                     <Link to={item.url}>
                       <item.icon />
@@ -89,10 +93,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentPath === item.url}
-                  >
+                  <SidebarMenuButton asChild isActive={currentPath?.startsWith(item.url)}>
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
