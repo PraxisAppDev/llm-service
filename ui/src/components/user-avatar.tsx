@@ -24,6 +24,7 @@ export function UserAvatar({
       return { hash, label };
     },
     staleTime: Infinity,
+    refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     retry: false,

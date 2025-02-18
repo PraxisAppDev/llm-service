@@ -11,9 +11,9 @@ import {
   CreateAdminReqSchema,
   ErrorResSchema,
   GetModelReqSchema,
-  LogoutReqParamsSchema,
   ModelResSchema,
   ModelsResSchema,
+  UserIdReqParamsSchema,
 } from "./schemas";
 
 const RES_400 = {
@@ -96,6 +96,26 @@ export const getCurrentAdminRoute = createRoute({
   },
 });
 
+export const deleteAdminRoute = createRoute({
+  method: "delete",
+  path: "/admins/{userId}",
+  summary: "Delete the specified admin user (can't be the authorized admin)",
+  tags: ["Admins"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    params: UserIdReqParamsSchema,
+    cookies: AuthorizedReqCookiesSchema,
+  },
+  responses: {
+    204: {
+      description: "Admin deleted successfully",
+    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
 // ADMIN SESSIONS --------
 
 export const loginAdminRoute = createRoute({
@@ -127,7 +147,7 @@ export const logoutAdminRoute = createRoute({
   tags: ["Admins"],
   security: [{ SessionAuth: [] }],
   request: {
-    params: LogoutReqParamsSchema,
+    params: UserIdReqParamsSchema,
     cookies: AuthorizedReqCookiesSchema,
   },
   responses: {
@@ -145,7 +165,7 @@ export const logoutAdminRoute = createRoute({
 export const listModelsRoute = createRoute({
   method: "get",
   path: "/models",
-  summary: "Lists the currently available LLMs",
+  summary: "List the currently available LLMs",
   tags: ["Models"],
   security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {
@@ -191,7 +211,7 @@ export const getModelRoute = createRoute({
 export const completionsRoute = createRoute({
   method: "post",
   path: "/completions",
-  summary: "Creates a model completion for the given prompt",
+  summary: "Create a model completion for the given prompt",
   tags: ["Completions"],
   security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {
@@ -217,7 +237,7 @@ export const completionsRoute = createRoute({
 export const chatRoute = createRoute({
   method: "post",
   path: "/chat/completions",
-  summary: "Creates a model completion for the given chat conversation",
+  summary: "Create a model completion for the given chat conversation",
   tags: ["Chat"],
   security: [{ SessionAuth: [], ApiKeyAuth: [] }],
   request: {

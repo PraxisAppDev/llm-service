@@ -5,7 +5,14 @@ import { deleteCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
-import { createAdmin, currentAdmin, listAdmins, loginAdmin, logoutAdmin } from "./api/admins";
+import {
+  createAdmin,
+  currentAdmin,
+  deleteAdmin,
+  listAdmins,
+  loginAdmin,
+  logoutAdmin,
+} from "./api/admins";
 import { chatCompletion, completion } from "./api/completions";
 import { getModel, listModels } from "./api/models";
 import { LambdaBindings, responseTypes } from "./common";
@@ -15,6 +22,7 @@ import {
   chatRoute,
   completionsRoute,
   createAdminRoute,
+  deleteAdminRoute,
   getCurrentAdminRoute,
   getModelRoute,
   listAdminsRoute,
@@ -92,7 +100,7 @@ app.onError((err, c) => {
 app.openapi(listAdminsRoute, async (c) => {
   const token = c.req.valid("cookie")[TOKEN_COOKIE];
 
-  console.info(`List admins request with token ${token?.substring(0, 7)}...`);
+  console.info(`List admins request from token ${token?.substring(0, 7)}...`);
 
   try {
     const result = await listAdmins(token);
@@ -107,7 +115,7 @@ app.openapi(listAdminsRoute, async (c) => {
     return c.json(
       {
         error: responseTypes.server_error,
-        messages: ["List admins failed"],
+        messages: ["List admins failed unexpectedly"],
       },
       500
     );
@@ -158,7 +166,33 @@ app.openapi(getCurrentAdminRoute, async (c) => {
     return c.json(
       {
         error: responseTypes.server_error,
-        messages: ["Get admin user for session failed"],
+        messages: ["Get admin user for session failed unexpectedly"],
+      },
+      500
+    );
+  }
+});
+
+app.openapi(deleteAdminRoute, async (c) => {
+  const { userId } = c.req.valid("param");
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`Delete admin request for ${userId} from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await deleteAdmin(userId, token);
+
+    if (result.ok) {
+      return c.body(null, 204);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Delete admin user failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["Delete admin user failed unexpectedly"],
       },
       500
     );

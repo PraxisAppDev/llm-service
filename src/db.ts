@@ -53,6 +53,36 @@ const createAdminUser = async (user: AdminUser, passwordHash: string) => {
   console.info(`Created new admin user: ${user.id} -> ${user.email}`);
 };
 
+const deleteAdminUser = async (id: string) => {
+  const cmd = new QueryCommand({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "userId = :uid",
+    ExpressionAttributeValues: {
+      ":uid": id,
+    },
+    ProjectionExpression: "userId, recordId",
+  });
+
+  const response = await client.send(cmd);
+
+  console.info("Find all for user ID", response);
+
+  if (!response.Items) return;
+
+  for (const item of response.Items) {
+    const cmd = new DeleteCommand({
+      TableName: TABLE_NAME,
+      Key: {
+        userId: item.userId as string,
+        recordId: item.recordId as string,
+      },
+    });
+
+    const response = await client.send(cmd);
+    console.info("Delete admin item", response);
+  }
+};
+
 const findAdminUser = async (email: string) => {
   const cmd = new QueryCommand({
     TableName: TABLE_NAME,
@@ -131,6 +161,7 @@ export const adminUsers = {
   find: findAdminUser,
   get: getAdminUser,
   list: listAdminUsers,
+  delete: deleteAdminUser,
 };
 
 // ADMIN SESSIONS --------

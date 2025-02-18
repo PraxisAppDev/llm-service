@@ -65,6 +65,32 @@ export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
   };
 };
 
+export const deleteAdmin = async (userId: string, token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  if ((userId = auth.adminUser.user.id)) {
+    // don't let admins delete their own accounts
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: ["Admins can't delete their own accounts"],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
+
+  await adminUsers.delete(userId);
+
+  return { ok: true };
+};
+
 export const currentAdmin = async (token?: string) => {
   const auth = await authorizeToken(token);
 

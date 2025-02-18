@@ -147,11 +147,11 @@ export const GetModelReqSchema = z
   })
   .openapi("ModelRequestParams");
 
-export const LogoutReqParamsSchema = z
+export const UserIdReqParamsSchema = z
   .object({
     userId,
   })
-  .openapi("LogoutRequestParams");
+  .openapi("UserIdRequestParams");
 
 // REQUEST BODIES --------
 
