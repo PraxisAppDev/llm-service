@@ -1,3 +1,4 @@
+import { deleteAdmin } from "@/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,19 +11,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAdmins } from "@/hooks/use-admins";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/admins/$adminId/delete")({
   component: DeleteAdmin,
 });
 
 function DeleteAdmin() {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(true);
   const navigate = Route.useNavigate();
-  const goBack = useCallback(() => {
-    setTimeout(() => void navigate({ from: Route.fullPath, to: "/admins", replace: true }), 150);
-  }, [navigate]);
   const { auth } = Route.useRouteContext();
   const { adminId } = Route.useParams();
   const { data } = useAdmins();
@@ -30,6 +31,29 @@ function DeleteAdmin() {
     if (!data) return [];
     return data.admins.map((u) => u.id);
   }, [data]);
+  const goBack = useCallback(() => {
+    setTimeout(() => void navigate({ from: Route.fullPath, to: "/admins", replace: true }), 150);
+  }, [navigate]);
+  const mutation = useMutation({
+    mutationKey: ["deleteAdmin"],
+    mutationFn: () => {
+      if (!adminId) {
+        throw new Error("Can't delete admin with no admin ID!");
+      }
+      return deleteAdmin(adminId);
+    },
+    onSuccess: () => {
+      console.info("Delete admin successful!", adminId);
+      toast.success("Admin deleted successfully!");
+      void queryClient.invalidateQueries({ queryKey: ["admins"] });
+      setOpen(false);
+      goBack();
+    },
+    onError: (error) => {
+      console.error(`Delete admin failed: ${error.message}`);
+      // TODO: need to handle errors
+    },
+  });
 
   if (!auth.user) return null;
   if (!data) return null;
@@ -105,8 +129,16 @@ function DeleteAdmin() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Back</AlertDialogCancel>
-          <AlertDialogDestructive>Delete</AlertDialogDestructive>
+          <AlertDialogCancel disabled={mutation.isPending}>Back</AlertDialogCancel>
+          <AlertDialogDestructive
+            disabled={mutation.isPending}
+            onClick={(e) => {
+              e.preventDefault();
+              mutation.mutate();
+            }}
+          >
+            {mutation.isPending ? "Deleting..." : "Delete"}
+          </AlertDialogDestructive>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

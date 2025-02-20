@@ -41,11 +41,11 @@ export function NavUser() {
       return deleteAdminSession(user.id);
     },
     onError: (error) => {
-      console.info(`[AuthProvider] Logout failed: ${error.message}`);
+      console.info(`[Logout] logout failed: ${error.message}`);
       toast.error(`Logout failed: ${error.message}`);
     },
     onSuccess: () => {
-      console.info("[AuthProvider] Logout successful!");
+      console.info("[Logout] logout successful!");
       toast.success("You have successfully logged out");
       queryClient.setQueryData(["currentUser"], null);
     },

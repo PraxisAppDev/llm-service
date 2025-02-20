@@ -71,6 +71,18 @@ export const getCurrentAdmin = async (): Promise<AdminUser | undefined> => {
   }
 };
 
+export const deleteAdmin = async (userId: string) => {
+  const response = await fetch(`${API_ROOT}/admins/${userId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
 export const createAdminSession = async (credentials: { email: string; password: string }) => {
   const response = await fetch(`${API_ROOT}/admins/sessions`, {
     method: "POST",

@@ -75,7 +75,7 @@ export const deleteAdmin = async (userId: string, token?: string) => {
     };
   }
 
-  if ((userId = auth.adminUser.user.id)) {
+  if (userId === auth.adminUser.user.id) {
     // don't let admins delete their own accounts
     return {
       error: {

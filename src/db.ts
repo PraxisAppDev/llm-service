@@ -69,6 +69,8 @@ const deleteAdminUser = async (id: string) => {
 
   if (!response.Items) return;
 
+  // TODO use a transaction here
+
   for (const item of response.Items) {
     const cmd = new DeleteCommand({
       TableName: TABLE_NAME,

@@ -42,7 +42,7 @@ function CreateAdmin() {
       return createAdmin(params);
     },
     onError: (error) => {
-      console.info(`Create admin failed: ${error.message}`);
+      console.error(`Create admin failed: ${error.message}`);
     },
     onSuccess: (data) => {
       console.info(`Create admin successful! ${data.email} -> ${data.id}`);
