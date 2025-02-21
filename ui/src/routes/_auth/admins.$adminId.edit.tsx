@@ -54,7 +54,7 @@ function EditAdmin() {
     },
     onSuccess: (data) => {
       // console.info(`Edit admin successful! ${data.email} -> ${data.id}`);
-      toast.success("Admin information updated successfully!");
+      toast.success("Your account information updated successfully!");
       void queryClient.invalidateQueries({ queryKey: ["admins"] });
       setOpen(false);
       goBack();
