@@ -40,6 +40,7 @@ function DeleteAdmin() {
       if (!adminId) {
         throw new Error("Can't delete admin with no admin ID!");
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return deleteAdmin(adminId);
     },
     onSuccess: () => {

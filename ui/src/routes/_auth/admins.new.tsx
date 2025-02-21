@@ -168,7 +168,7 @@ function CreateAdmin() {
                 form="newadminform"
                 disabled={isPristine || isBusy || !canSubmit}
               >
-                {isBusy ? "Submitting..." : "Submit"}
+                {isBusy ? "Creating..." : "Create"}
               </Button>
             )}
           </form.Subscribe>
