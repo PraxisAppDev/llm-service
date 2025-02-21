@@ -17,14 +17,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ChevronsDown,
-  ChevronsRight,
-  LoaderCircle,
-  LogOut,
-  Pencil,
-  RectangleEllipsis,
-} from "lucide-react";
+import { ChevronsDown, ChevronsRight, LoaderCircle, LogOut, RectangleEllipsis } from "lucide-react";
 import { toast } from "sonner";
 
 export function NavUser() {
@@ -65,7 +58,6 @@ export function NavUser() {
               <UserAvatar userId={user.id} userName={user.name} />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
-                {/* <span className="truncate text-xs">{user.email}</span> */}
               </div>
               {isMobile ? (
                 <ChevronsDown className="ml-auto size-4" />
@@ -90,13 +82,13 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               onSelect={() =>
                 void navigate({ to: "/admins/$adminId/edit", params: { adminId: user.id } })
               }
             >
               <Pencil /> Edit account
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem
               onSelect={() =>
                 void navigate({ to: "/admins/$adminId/changepw", params: { adminId: user.id } })

@@ -7,9 +7,7 @@ export const Route = createFileRoute("/login")({
   beforeLoad: ({ context, search }) => {
     if (context.auth.user) {
       // already logged in
-      console.log(
-        `[Login] User is logged in! Redirecting to ${search.redirect}`
-      );
+      console.log(`[Login] User is logged in! Redirecting to ${search.redirect}`);
 
       throw redirect({ to: search.redirect || indexRoute.to });
     }

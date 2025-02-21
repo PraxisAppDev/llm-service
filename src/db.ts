@@ -5,6 +5,7 @@ import {
   PutCommand,
   QueryCommand,
   ScanCommand,
+  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { getUnixTime } from "date-fns";
 import { Resource } from "sst";
@@ -53,6 +54,47 @@ const createAdminUser = async (user: AdminUser, passwordHash: string) => {
   console.info(`Created new admin user: ${user.id} -> ${user.email}`);
 };
 
+// const updateAdminUser = async (user: AdminUser, passwordHash: string) => {
+//   const cmd = new UpdateCommand({
+//     TableName: TABLE_NAME,
+//     Key: {
+//       userId: user.id,
+//       recordId: mkAuthId(user.email),
+//     },
+//     UpdateExpression:
+//       "SET recordId = :recordId, userName = :name, updatedAt = :updatedAt, passwordHash = :passwordHash",
+//     ExpressionAttributeValues: {
+//       ":recordId": mkAuthId(user.email),
+//       ":name": user.name,
+//       ":updatedAt": user.updatedAt,
+//       ":passwordHash": passwordHash,
+//     },
+//     ReturnValues: "ALL_NEW",
+//   });
+
+//   const response = await client.send(cmd);
+//   console.info("Update admin user", response);
+// };
+
+const updateAdminPw = async (user: AdminUser, passwordHash: string) => {
+  const cmd = new UpdateCommand({
+    TableName: TABLE_NAME,
+    Key: {
+      userId: user.id,
+      recordId: mkAuthId(user.email),
+    },
+    UpdateExpression: "SET passwordHash = :passwordHash, updatedAt = :updatedAt",
+    ExpressionAttributeValues: {
+      ":passwordHash": passwordHash,
+      ":updatedAt": user.updatedAt,
+    },
+    ReturnValues: "ALL_NEW",
+  });
+
+  const response = await client.send(cmd);
+  console.info("Update admin user password", response);
+};
+
 const deleteAdminUser = async (id: string) => {
   const cmd = new QueryCommand({
     TableName: TABLE_NAME,
@@ -67,7 +109,7 @@ const deleteAdminUser = async (id: string) => {
 
   console.info("Find all for user ID", response);
 
-  if (!response.Items) return;
+  if (!response.Items || response.Items.length === 0) return false;
 
   // TODO use a transaction here
 
@@ -83,6 +125,8 @@ const deleteAdminUser = async (id: string) => {
     const response = await client.send(cmd);
     console.info("Delete admin item", response);
   }
+
+  return true;
 };
 
 const findAdminUser = async (email: string) => {
@@ -160,6 +204,8 @@ const listAdminUsers = async () => {
 
 export const adminUsers = {
   create: createAdminUser,
+  // update: updateAdminUser,
+  updatePw: updateAdminPw,
   find: findAdminUser,
   get: getAdminUser,
   list: listAdminUsers,

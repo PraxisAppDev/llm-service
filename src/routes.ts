@@ -5,6 +5,7 @@ import {
   AdminUserResSchema,
   AuthorizedReqCookiesSchema,
   AuthorizedReqHeadersSchema,
+  ChangeAdminPwReqSchema,
   ChatReqSchema,
   CompletionReqSchema,
   CompletionResSchema,
@@ -109,6 +110,31 @@ export const deleteAdminRoute = createRoute({
   responses: {
     204: {
       description: "Admin deleted successfully",
+    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
+export const changeAdminPwRoute = createRoute({
+  method: "put",
+  path: "/admins/{userId}/password",
+  summary: "Change the specified admin user's password (must be the authorized admin)",
+  tags: ["Admins"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    params: UserIdReqParamsSchema,
+    cookies: AuthorizedReqCookiesSchema,
+    body: {
+      required: true,
+      content: { "application/json": { schema: ChangeAdminPwReqSchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "Admin password changed successfully",
+      content: { "application/json": { schema: AdminUserResSchema } },
     },
     400: RES_400,
     401: RES_401,

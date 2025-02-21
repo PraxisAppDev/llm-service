@@ -1,3 +1,4 @@
+import { changeAdminPw } from "@/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,15 +51,19 @@ function ChangeAdminPassword() {
   }, [navigate]);
   const mutation = useMutation({
     mutationKey: ["changeAdminPw"],
-    // mutationFn: (params: EditAdminParams) => {
-    //   // return createAdmin(params);
-    // },
+    mutationFn: (params: ChangeAdminPwParams) => {
+      return changeAdminPw(adminId, {
+        currentPassword: params.currentPassword,
+        newPassword: params.newPassword,
+      });
+    },
     onError: (error) => {
       console.error(`Change admin password failed: ${error.message}`);
     },
     onSuccess: (data) => {
-      // console.info(`Change admin password successful! ${data.email} -> ${data.id}`);
+      console.info(`Change admin password successful! ${data.email} -> ${data.id}`);
       toast.success("Your password was changed successfully!");
+      queryClient.setQueryData(["currentUser"], data);
       void queryClient.invalidateQueries({ queryKey: ["admins"] });
       setOpen(false);
       goBack();
@@ -101,7 +106,7 @@ function ChangeAdminPassword() {
       },
     },
     onSubmit: ({ value }) => {
-      // mutation.mutate(value);
+      mutation.mutate(value);
     },
   });
 
@@ -133,12 +138,6 @@ function ChangeAdminPassword() {
   }
 
   const isBusy = form.state.isSubmitting || mutation.isPending;
-  // const pwMatch = form.st;
-  // form.state.values.repeatNewPassword.length == 0 ||
-  //   form.state.values.newPassword === form.state.values.repeatNewPassword;
-
-  console.log("PW Match", pwMatch);
-  console.log("PW Same", pwSame);
 
   return (
     <Dialog

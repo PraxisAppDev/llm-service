@@ -83,6 +83,25 @@ export const deleteAdmin = async (userId: string) => {
   }
 };
 
+export const changeAdminPw = async (
+  userId: string,
+  body: { currentPassword: string; newPassword: string },
+) => {
+  const response = await fetch(`${API_ROOT}/admins/${userId}/password`, {
+    method: "PUT",
+    headers: POST_HEADERS,
+    body: JSON.stringify(body),
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as AdminUser;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
 export const createAdminSession = async (credentials: { email: string; password: string }) => {
   const response = await fetch(`${API_ROOT}/admins/sessions`, {
     method: "POST",

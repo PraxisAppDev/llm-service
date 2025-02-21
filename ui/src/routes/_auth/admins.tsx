@@ -7,7 +7,7 @@ import { useAdmins } from "@/hooks/use-admins";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, fromUnixTime, getUnixTime, parseISO } from "date-fns";
-import { CirclePlus, Pencil, RectangleEllipsis, Trash } from "lucide-react";
+import { CirclePlus, RectangleEllipsis, Trash } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/admins")({
   component: AdminUsers,
@@ -51,11 +51,11 @@ function RowActions({ user }: { user: AdminUser }) {
     <div className="flex justify-end gap-2">
       {user.id === auth.user?.id && (
         <>
-          <Button variant="outline" size="icon" title="Edit account info" asChild>
+          {/* <Button variant="outline" size="icon" title="Edit account info" asChild>
             <Link from={Route.fullPath} to="$adminId/edit" params={{ adminId: user.id }} replace>
               <Pencil />
             </Link>
-          </Button>
+          </Button> */}
           <Button variant="outline" size="icon" title="Change password" asChild>
             <Link
               from={Route.fullPath}

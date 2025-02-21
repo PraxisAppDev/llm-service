@@ -172,6 +172,20 @@ export const AdminLoginReqSchema = z
   })
   .openapi("AdminLoginRequest");
 
+export const ChangeAdminPwReqSchema = z
+  .object({
+    currentPassword: password,
+    newPassword: z
+      .string({ required_error: "New password is required" })
+      .min(8, { message: "New password must be at least 8 characters" })
+      .openapi({
+        description: "The user's new password (at least 8 characters)",
+      }),
+  })
+  .openapi("ChangeAdminPwRequest");
+
+export type ChangeAdminPwRequest = z.infer<typeof ChangeAdminPwReqSchema>;
+
 export const CompletionReqSchema = z
   .object({
     model,

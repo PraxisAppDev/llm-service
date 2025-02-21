@@ -2,7 +2,7 @@ import { addDays } from "date-fns";
 import { authorizeToken, pwHash, pwVerify, sid, uid } from "../auth";
 import { responseTypes } from "../common";
 import { adminSessions, adminUsers } from "../db";
-import { CreateAdminRequest } from "../schemas";
+import { ChangeAdminPwRequest, CreateAdminRequest } from "../schemas";
 
 export const listAdmins = async (token?: string) => {
   const auth = await authorizeToken(token);
@@ -65,6 +65,50 @@ export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
   };
 };
 
+export const changeAdminPw = async (req: ChangeAdminPwRequest, userId: string, token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  if (userId !== auth.adminUser.user.id) {
+    // only let admins change their own passwords
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: ["Admins can only change their own passwords"],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
+
+  if (!(await pwVerify(auth.adminUser.passwordHash, req.currentPassword))) {
+    // waste some more time to throttle
+    await pwHash(req.newPassword);
+    await pwHash(req.newPassword);
+    await pwHash(req.newPassword);
+
+    return {
+      error: {
+        error: responseTypes.unauthorized,
+        messages: ["Authorization failed"],
+      },
+      errorStatus: 401 as 401,
+    };
+  }
+
+  const updatedUser = { ...auth.adminUser.user, updatedAt: new Date().toISOString() };
+  const pwh = await pwHash(req.newPassword);
+
+  await adminUsers.updatePw(updatedUser, pwh);
+
+  return { admin: updatedUser };
+};
+
 export const deleteAdmin = async (userId: string, token?: string) => {
   const auth = await authorizeToken(token);
 
@@ -85,8 +129,6 @@ export const deleteAdmin = async (userId: string, token?: string) => {
       errorStatus: 400 as 400,
     };
   }
-
-  await adminUsers.delete(userId);
 
   return { ok: true };
 };

@@ -6,6 +6,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import {
+  changeAdminPw,
   createAdmin,
   currentAdmin,
   deleteAdmin,
@@ -19,6 +20,7 @@ import { LambdaBindings, responseTypes } from "./common";
 import env from "./env";
 import { validationHook } from "./middleware";
 import {
+  changeAdminPwRoute,
   chatRoute,
   completionsRoute,
   createAdminRoute,
@@ -193,6 +195,35 @@ app.openapi(deleteAdminRoute, async (c) => {
       {
         error: responseTypes.server_error,
         messages: ["Delete admin user failed unexpectedly"],
+      },
+      500
+    );
+  }
+});
+
+app.openapi(changeAdminPwRoute, async (c) => {
+  const { userId } = c.req.valid("param");
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const body = c.req.valid("json");
+
+  console.info(
+    `Change admin password request for ${userId} from token ${token?.substring(0, 7)}...`
+  );
+
+  try {
+    const result = await changeAdminPw(body, userId, token);
+
+    if (result.admin) {
+      return c.json(result.admin, 200);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Change admin password failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["Change admin password failed unexpectedly"],
       },
       500
     );

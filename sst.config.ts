@@ -27,6 +27,7 @@ export default $config({
           projection: ["expiresAt"],
         },
       },
+      // TODO: add TTL field for sessions and keys
     });
 
     // API
