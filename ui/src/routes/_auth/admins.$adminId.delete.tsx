@@ -51,7 +51,6 @@ function DeleteAdmin() {
     },
     onError: (error) => {
       console.error(`Delete admin failed: ${error.message}`);
-      // TODO: need to handle errors
     },
   });
 
@@ -127,6 +126,11 @@ function DeleteAdmin() {
             </span>
             . The admin will be permanently deleted. This action cannot be undone!
           </AlertDialogDescription>
+          {mutation.isError && (
+            <div className="bg-destructive mt-2 p-1 rounded text-center text-sm text-destructive-foreground">
+              {mutation.error.message}
+            </div>
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={mutation.isPending}>Back</AlertDialogCancel>
