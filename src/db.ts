@@ -185,6 +185,7 @@ const listAdminUsers = async () => {
         ":record": `${PREFIX_AUTH}${SEP}`,
       },
       ProjectionExpression: "userId, recordId, userName, passwordHash, createdAt, updatedAt",
+      ConsistentRead: true,
     });
 
     const response = await client.send(cmd);
