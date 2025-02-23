@@ -5,15 +5,20 @@
 
 declare module "sst" {
   export interface Resource {
-    "llm-db": {
+    "Data": {
       "name": string
       "type": "sst.aws.Dynamo"
     }
-    "llm-gw": {
+    "Email": {
+      "configSet": string
+      "sender": string
+      "type": "sst.aws.Email"
+    }
+    "Gateway": {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
-    "llm-ui": {
+    "UI": {
       "type": "sst.aws.StaticSite"
       "url": string
     }

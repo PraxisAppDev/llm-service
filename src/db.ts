@@ -13,7 +13,7 @@ import { AdminUser } from "./schemas";
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-const TABLE_NAME: string = Resource["llm-db"].name;
+const TABLE_NAME: string = Resource.Data.name;
 const ADMIN_AUTH_INDEX: string = "AdminAuthIdx";
 const ADMIN_SESSION_INDEX: string = "AdminSessionIdx";
 

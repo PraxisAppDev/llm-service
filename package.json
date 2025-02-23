@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "sst dev",
-    "deploy:prod": "sst deploy --stage production"
+    "remove": "sst remove",
+    "deploy:prod": "sst deploy --stage production",
+    "seed:admin": "node scripts/seed-admin.js"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.147",

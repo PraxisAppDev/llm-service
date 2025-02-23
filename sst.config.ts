@@ -10,8 +10,17 @@ export default $config({
     };
   },
   async run() {
+    // DOMAIN
+    const hostedZone = "Z02504132A2QSK5CUNLEL";
+    const domain =
+      $app.stage === "production"
+        ? "llms.afterhoursdev.com"
+        : $dev
+        ? `dev-${$app.stage}.llms.afterhoursdev.com`
+        : `${$app.stage}.llms.afterhoursdev.com`;
+
     // DATABASE
-    const db = new sst.aws.Dynamo("llm-db", {
+    const db = new sst.aws.Dynamo("Data", {
       fields: {
         userId: "string",
         recordId: "string",
@@ -27,17 +36,31 @@ export default $config({
           projection: ["expiresAt"],
         },
       },
-      // TODO: add TTL field for sessions and keys
+      ttl: "expiresAt",
+    });
+
+    // EMAIL
+    const email = new sst.aws.Email("Email", {
+      sender: domain,
+      dmarc: "v=DMARC1; p=reject; adkim=r;",
+      dns: sst.aws.dns({
+        zone: hostedZone,
+      }),
     });
 
     // API
-    const api = new sst.aws.ApiGatewayV2("llm-gw", {
+    const api = new sst.aws.ApiGatewayV2("Gateway", {
       cors: {
-        // TODO: set origins correctly for production once we have a domain
-        allowOrigins: ["http://localhost:5173", "https://*"],
+        allowOrigins: $dev ? ["http://localhost:5173", `https://${domain}`] : [`https://${domain}`],
         allowMethods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
         allowHeaders: ["Accept", "Content-Type", "X-API-KEY"],
         allowCredentials: true,
+      },
+      domain: {
+        name: `api.${domain}`,
+        dns: sst.aws.dns({
+          zone: hostedZone,
+        }),
       },
     });
 
@@ -66,7 +89,7 @@ export default $config({
     });
 
     // UI
-    const ui = new sst.aws.StaticSite("llm-ui", {
+    const ui = new sst.aws.StaticSite("UI", {
       path: "ui",
       build: {
         command: "npm run build",
@@ -85,6 +108,7 @@ export default $config({
     });
 
     return {
+      table: db.name,
       api: api.url,
       ui: ui.url,
     };
