@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, formatISO } from "date-fns";
 import { authorizeToken, pwHash, pwVerify, sid, uid } from "../auth";
 import { responseTypes } from "../common";
 import { adminSessions, adminUsers } from "../db";
@@ -48,7 +48,7 @@ export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
 
   const id = uid();
   const pwh = await pwHash(req.password);
-  const now = new Date().toISOString();
+  const now = formatISO(new Date());
 
   const admin = {
     id,
@@ -101,7 +101,7 @@ export const changeAdminPw = async (req: ChangeAdminPwRequest, userId: string, t
     };
   }
 
-  const updatedUser = { ...auth.adminUser.user, updatedAt: new Date().toISOString() };
+  const updatedUser = { ...auth.adminUser.user, updatedAt: formatISO(new Date()) };
   const pwh = await pwHash(req.newPassword);
 
   await adminUsers.updatePw(updatedUser, pwh);

@@ -269,9 +269,7 @@ export type AdminUser = z.infer<typeof AdminUserResSchema>;
 export const AdminListResSchema = z
   .object({
     count: z.number().min(0).openapi({ description: "The number of admins returned" }),
-    admins: z
-      .array(AdminUserResSchema.optional())
-      .openapi({ description: "The list of admin users" }),
+    admins: z.array(AdminUserResSchema).openapi({ description: "The list of admin users" }),
   })
   .openapi("ListAdminsResponse");
 
@@ -297,6 +295,13 @@ export const UserResSchema = z
     apiKeys: z.array(UserApiKeySchema),
   })
   .openapi("UserResponse");
+
+export const UserListResSchema = z
+  .object({
+    count: z.number().min(0).openapi({ description: "The number of users returned" }),
+    users: z.array(UserResSchema).openapi({ description: "The list of users" }),
+  })
+  .openapi("ListUsersResponse");
 
 export type User = Omit<z.infer<typeof UserResSchema>, "apiKeys">;
 export type UserWithKeys = z.infer<typeof UserResSchema>;

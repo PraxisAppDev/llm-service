@@ -2,6 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { hash } from "@node-rs/argon2";
 import { createId } from "@paralleldrive/cuid2";
+import { formatISO } from "date-fns";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -39,7 +40,7 @@ const adminName = process.argv[2].trim();
 const adminEmail = process.argv[3].trim();
 const adminPassword = process.argv[4];
 const pwh = await hash(adminPassword, argonOpts);
-const now = new Date().toISOString();
+const now = formatISO(new Date());
 
 let sst;
 try {

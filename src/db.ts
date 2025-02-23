@@ -10,7 +10,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { formatISO, fromUnixTime, getUnixTime } from "date-fns";
 import { Resource } from "sst";
-import { AdminUser, InternalApiKey, User, UserApiKey } from "./schemas";
+import { AdminUser, InternalApiKey, User, UserApiKey, UserWithKeys } from "./schemas";
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
@@ -22,7 +22,7 @@ const SEP = "#";
 const PREFIX_AUTH = "Auth";
 const PREFIX_SESSION = "Session";
 const PREFIX_USER = "ApiUser";
-const PREFIX_USER_KEY = "ApiUserKey";
+const PREFIX_USER_KEY = `${PREFIX_USER}Key`;
 
 const mkAuthId = (email: string) => `${PREFIX_AUTH}${SEP}${email}`;
 const mkSessionId = (token: string) => `${PREFIX_SESSION}${SEP}${token}`;
@@ -357,7 +357,65 @@ const findUser = async (email: string) => {
   }
 };
 
-export const users = {
+const listUsers = async () => {
+  let startKey: Record<string, any> | undefined = undefined;
+  const users = new Map<string, User>();
+  const keys = new Map<string, UserApiKey[]>();
+
+  do {
+    const cmd: ScanCommand = new ScanCommand({
+      TableName: TABLE_NAME,
+      ExclusiveStartKey: startKey,
+      FilterExpression: "begins_with (recordId, :record)",
+      ExpressionAttributeValues: {
+        ":record": `${PREFIX_USER}`,
+      },
+      ProjectionExpression: "userId, recordId, userName, createdAt, updatedAt, apiKey, expiresAt",
+      ConsistentRead: true,
+    });
+
+    const response = await client.send(cmd);
+    console.log("Scan users", response);
+    startKey = response.LastEvaluatedKey;
+
+    if (response.Items) {
+      for (const item of response.Items) {
+        if ((item.recordId as string).startsWith(PREFIX_USER_KEY)) {
+          // this is an API key item
+          const userId = item.userId as string;
+          const key = dynamoToKey(item);
+          let userKeys = keys.get(userId);
+          if (!userKeys) {
+            userKeys = [key];
+          } else {
+            userKeys.push(key);
+          }
+          keys.set(userId, userKeys);
+        } else {
+          // this is an API user item
+          const user = dynamoToUser(item);
+          users.set(user.id, user);
+        }
+      }
+    }
+  } while (startKey);
+
+  // construct the result
+  const result: UserWithKeys[] = [];
+  for (const user of users.values()) {
+    let apiKeys = keys.get(user.id) || [];
+    const uwk = {
+      ...user,
+      apiKeys,
+    };
+    result.push(uwk);
+  }
+
+  return result;
+};
+
+export const apiUsers = {
+  list: listUsers,
   create: createUser,
   find: findUser,
 };

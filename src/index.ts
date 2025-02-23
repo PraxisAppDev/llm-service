@@ -16,7 +16,7 @@ import {
 } from "./api/admins";
 import { chatCompletion, completion } from "./api/completions";
 import { getModel, listModels } from "./api/models";
-import { createUser } from "./api/users";
+import { createUser, listUsers } from "./api/users";
 import { LambdaBindings, responseTypes } from "./common";
 import env from "./env";
 import { validationHook } from "./middleware";
@@ -31,6 +31,7 @@ import {
   getModelRoute,
   listAdminsRoute,
   listModelsRoute,
+  listUsersRoute,
   loginAdminRoute,
   logoutAdminRoute,
 } from "./routes";
@@ -297,6 +298,31 @@ app.openapi(logoutAdminRoute, async (c) => {
 
 // USERS & KEYS --------
 
+app.openapi(listUsersRoute, async (c) => {
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`List API users request from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await listUsers(token);
+
+    if (result.users) {
+      return c.json(result.users, 200);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("List API users failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["List API users failed unexpectedly"],
+      },
+      500
+    );
+  }
+});
+
 app.openapi(createUserRoute, async (c) => {
   const token = c.req.valid("cookie")[TOKEN_COOKIE];
   const body = c.req.valid("json");
@@ -316,7 +342,7 @@ app.openapi(createUserRoute, async (c) => {
     return c.json(
       {
         error: responseTypes.server_error,
-        messages: ["User creation failed"],
+        messages: ["User creation failed unexpectedly"],
       },
       500
     );

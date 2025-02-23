@@ -1,8 +1,28 @@
-import { getUnixTime, parseISO } from "date-fns";
+import { formatISO, getUnixTime, parseISO } from "date-fns";
 import { authorizeToken, key, uid } from "../auth";
 import { responseTypes } from "../common";
-import { users } from "../db";
+import { apiUsers } from "../db";
 import { CreateUserRequest } from "../schemas";
+
+export const listUsers = async (token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  const users = await apiUsers.list();
+
+  return {
+    users: {
+      count: users.length,
+      users,
+    },
+  };
+};
 
 export const createUser = async (req: CreateUserRequest, token?: string) => {
   const auth = await authorizeToken(token);
@@ -14,7 +34,7 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
     };
   }
 
-  const existingUser = await users.find(req.email);
+  const existingUser = await apiUsers.find(req.email);
 
   if (existingUser) {
     return {
@@ -26,7 +46,7 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
     };
   }
 
-  const now = new Date().toISOString();
+  const now = formatISO(new Date());
   const user = {
     id: uid(),
     name: req.name,
@@ -43,7 +63,7 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
     expiresAt: req.keyExpiresAt,
   };
 
-  await users.create(user, { ...apiKey, key: fullKey, expiresAtUnix });
+  await apiUsers.create(user, { ...apiKey, key: fullKey, expiresAtUnix });
 
   return {
     user: { ...user, apiKeys: [apiKey] },

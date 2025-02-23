@@ -17,6 +17,7 @@ import {
   ModelsResSchema,
   SetCookieHeadersSchema,
   UserIdReqParamsSchema,
+  UserListResSchema,
   UserResSchema,
 } from "./schemas";
 
@@ -191,6 +192,25 @@ export const logoutAdminRoute = createRoute({
 });
 
 // USERS & KEYS --------
+
+export const listUsersRoute = createRoute({
+  method: "get",
+  path: "/users",
+  summary: "Get a list of API users and their keys",
+  tags: ["Users & Keys"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+  },
+  responses: {
+    200: {
+      description: "API users retrieved successfully",
+      content: { "application/json": { schema: UserListResSchema } },
+    },
+    401: RES_401,
+    500: RES_500,
+  },
+});
 
 export const createUserRoute = createRoute({
   method: "post",
