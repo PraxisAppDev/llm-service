@@ -48,6 +48,15 @@ export const sid = () => {
   return buf.toString("base64");
 };
 
+/**
+ * Create a random API key (32 bytes, hex)
+ * @returns a new API key
+ */
+export const key = () => {
+  const buf = randomBytes(32);
+  return buf.toString("hex");
+};
+
 export const authorizeToken = async (token?: string) => {
   // handle empty tokens
   if (!token) {

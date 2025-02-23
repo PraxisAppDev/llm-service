@@ -32,6 +32,7 @@ const password = z
 
 const sessionToken = z
   .string({ required_error: "Session token is required" })
+  .nonempty({ message: "Session token can't be empty" })
   .openapi({ description: "The admin user's session token" });
 
 const createdAt = z
@@ -50,10 +51,9 @@ const updatedAt = z
 
 const apiKey = z
   .string({ required_error: "X-API-KEY header is required" })
-  .uuid({ message: "Invalid API key format" })
+  .nonempty({ message: "API key can't be empty" })
   .openapi({
     description: "API key to authorize the request",
-    example: "36b8f84d-df4e-4d49-b662-bcde71a8764f",
   });
 
 const model = z.string({ required_error: "Model identifier is required" }).openapi({
@@ -131,6 +131,15 @@ export const AuthorizedReqHeadersSchema = z
   })
   .openapi("AuthorizedRequestHeaders");
 
+export const SetCookieHeadersSchema = z
+  .object({
+    "Set-Cookie": z
+      .string()
+      .nonempty()
+      .openapi({ description: "Will set the session cookie", example: "SESSION-TOKEN=..." }),
+  })
+  .openapi("LoginResponseHeader");
+
 // COOKIES --------
 
 export const AuthorizedReqCookiesSchema = z
@@ -185,6 +194,21 @@ export const ChangeAdminPwReqSchema = z
   .openapi("ChangeAdminPwRequest");
 
 export type ChangeAdminPwRequest = z.infer<typeof ChangeAdminPwReqSchema>;
+
+export const CreateUserReqSchema = z
+  .object({
+    name: userName,
+    email,
+    keyExpiresAt: z
+      .string({ required_error: "Key expires at is required" })
+      .datetime({ message: "Key expires at must be a valid ISO 8601 datetime" })
+      .openapi({
+        description: "When the user's first key will expire",
+      }),
+  })
+  .openapi("CreateUserRequest");
+
+export type CreateUserRequest = z.infer<typeof CreateUserReqSchema>;
 
 export const CompletionReqSchema = z
   .object({
@@ -251,6 +275,32 @@ export const AdminListResSchema = z
   })
   .openapi("ListAdminsResponse");
 
+const UserApiKeySchema = z.object({
+  id: z.string().cuid2().openapi({ description: "The API key ID" }),
+  snippet: z
+    .string()
+    .length(8)
+    .openapi({ description: "Short snippet of the API key for display" }),
+  expiresAt: z.string().datetime().openapi({ description: "Date/time When the API key expires" }),
+});
+
+export type UserApiKey = z.infer<typeof UserApiKeySchema>;
+export type InternalApiKey = UserApiKey & { key: string; expiresAtUnix: number };
+
+export const UserResSchema = z
+  .object({
+    id: userId,
+    name: userName,
+    email,
+    createdAt,
+    updatedAt,
+    apiKeys: z.array(UserApiKeySchema),
+  })
+  .openapi("UserResponse");
+
+export type User = Omit<z.infer<typeof UserResSchema>, "apiKeys">;
+export type UserWithKeys = z.infer<typeof UserResSchema>;
+
 export const CompletionResSchema = z
   .object({
     model,
@@ -263,13 +313,11 @@ export const CompletionResSchema = z
 export const ModelsResSchema = z
   .object({
     models: z.array(
-      z
-        .object({
-          name: modelName,
-          provider: modelProvider,
-          id: model,
-        })
-        .optional()
+      z.object({
+        name: modelName,
+        provider: modelProvider,
+        id: model,
+      })
     ),
   })
   .openapi("ListModelsResponse");

@@ -10,11 +10,14 @@ import {
   CompletionReqSchema,
   CompletionResSchema,
   CreateAdminReqSchema,
+  CreateUserReqSchema,
   ErrorResSchema,
   GetModelReqSchema,
   ModelResSchema,
   ModelsResSchema,
+  SetCookieHeadersSchema,
   UserIdReqParamsSchema,
+  UserResSchema,
 } from "./schemas";
 
 const RES_400 = {
@@ -159,6 +162,7 @@ export const loginAdminRoute = createRoute({
     201: {
       description: "Session created successfully",
       content: { "application/json": { schema: AdminUserResSchema } },
+      headers: SetCookieHeadersSchema,
     },
     400: RES_400,
     401: RES_401,
@@ -179,6 +183,32 @@ export const logoutAdminRoute = createRoute({
   responses: {
     204: {
       description: "Session deleted successfully",
+    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
+// USERS & KEYS --------
+
+export const createUserRoute = createRoute({
+  method: "post",
+  path: "/users",
+  summary: "Create a new API user and their first API key",
+  tags: ["Users & Keys"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+    body: {
+      required: true,
+      content: { "application/json": { schema: CreateUserReqSchema } },
+    },
+  },
+  responses: {
+    201: {
+      description: "API user created successfully",
+      content: { "application/json": { schema: UserResSchema } },
     },
     400: RES_400,
     401: RES_401,

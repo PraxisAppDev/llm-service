@@ -5,24 +5,29 @@ import {
   PutCommand,
   QueryCommand,
   ScanCommand,
+  TransactWriteCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { getUnixTime } from "date-fns";
+import { formatISO, fromUnixTime, getUnixTime } from "date-fns";
 import { Resource } from "sst";
-import { AdminUser } from "./schemas";
+import { AdminUser, InternalApiKey, User, UserApiKey } from "./schemas";
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const TABLE_NAME: string = Resource.Data.name;
-const ADMIN_AUTH_INDEX: string = "AdminAuthIdx";
+const ALL_USER_INDEX: string = "AllUserIdx";
 const ADMIN_SESSION_INDEX: string = "AdminSessionIdx";
 
 const SEP = "#";
 const PREFIX_AUTH = "Auth";
 const PREFIX_SESSION = "Session";
+const PREFIX_USER = "ApiUser";
+const PREFIX_USER_KEY = "ApiUserKey";
 
 const mkAuthId = (email: string) => `${PREFIX_AUTH}${SEP}${email}`;
 const mkSessionId = (token: string) => `${PREFIX_SESSION}${SEP}${token}`;
+const mkUserId = (email: string) => `${PREFIX_USER}${SEP}${email}`;
+const mkUserKeyId = (keyId: string) => `${PREFIX_USER_KEY}${SEP}${keyId}`;
 
 // ADMINS --------
 
@@ -51,7 +56,7 @@ const createAdminUser = async (user: AdminUser, passwordHash: string) => {
   });
 
   await client.send(cmd);
-  console.info(`Created new admin user: ${user.id} -> ${user.email}`);
+  console.log(`Created new admin user: ${user.id} -> ${user.email}`);
 };
 
 // const updateAdminUser = async (user: AdminUser, passwordHash: string) => {
@@ -73,7 +78,7 @@ const createAdminUser = async (user: AdminUser, passwordHash: string) => {
 //   });
 
 //   const response = await client.send(cmd);
-//   console.info("Update admin user", response);
+//   console.log("Update admin user", response);
 // };
 
 const updateAdminPw = async (user: AdminUser, passwordHash: string) => {
@@ -92,7 +97,7 @@ const updateAdminPw = async (user: AdminUser, passwordHash: string) => {
   });
 
   const response = await client.send(cmd);
-  console.info("Update admin user password", response);
+  console.log("Update admin user password", response);
 };
 
 const deleteAdminUser = async (id: string) => {
@@ -107,7 +112,7 @@ const deleteAdminUser = async (id: string) => {
 
   const response = await client.send(cmd);
 
-  console.info("Find all for user ID", response);
+  console.log("Find all for user ID", response);
 
   if (!response.Items || response.Items.length === 0) return false;
 
@@ -123,7 +128,7 @@ const deleteAdminUser = async (id: string) => {
     });
 
     const response = await client.send(cmd);
-    console.info("Delete admin item", response);
+    console.log("Delete admin item", response);
   }
 
   return true;
@@ -132,7 +137,7 @@ const deleteAdminUser = async (id: string) => {
 const findAdminUser = async (email: string) => {
   const cmd = new QueryCommand({
     TableName: TABLE_NAME,
-    IndexName: ADMIN_AUTH_INDEX,
+    IndexName: ALL_USER_INDEX,
     KeyConditionExpression: "recordId = :recId",
     ExpressionAttributeValues: {
       ":recId": mkAuthId(email),
@@ -142,7 +147,7 @@ const findAdminUser = async (email: string) => {
 
   const response = await client.send(cmd);
 
-  console.info("Find admin user", response);
+  console.log("Find admin user", response);
 
   if (response.Count && response.Count > 0 && response.Items) {
     return dynamoToAdminUser(response.Items[0]);
@@ -163,7 +168,7 @@ const getAdminUser = async (id: string) => {
 
   const response = await client.send(cmd);
 
-  console.info("Get admin user", response);
+  console.log("Get admin user", response);
 
   if (response.Count && response.Count > 0 && response.Items) {
     return dynamoToAdminUser(response.Items[0]);
@@ -189,7 +194,7 @@ const listAdminUsers = async () => {
     });
 
     const response = await client.send(cmd);
-    console.info("Scan admins", response);
+    console.log("Scan admins", response);
     startKey = response.LastEvaluatedKey;
 
     if (response.Items) {
@@ -226,7 +231,7 @@ const createAdminSession = async (user: AdminUser, token: string, expiresAt: Dat
   });
 
   await client.send(cmd);
-  console.info(`Created new admin session: ${user.id} -> ${user.email}`);
+  console.log(`Created new admin session: ${user.id} -> ${user.email}`);
 };
 
 const findAdminSession = async (token: string) => {
@@ -242,7 +247,7 @@ const findAdminSession = async (token: string) => {
 
   const response = await client.send(cmd);
 
-  console.info("Find admin session", response);
+  console.log("Find admin session", response);
 
   if (response.Count && response.Count > 0 && response.Items) {
     return {
@@ -272,4 +277,87 @@ export const adminSessions = {
   create: createAdminSession,
   find: findAdminSession,
   delete: deleteAdminSession,
+};
+
+// USERS & KEYS --------
+
+const dynamoToUser = (item: Record<string, any>) => {
+  const user: User = {
+    id: item.userId as string,
+    email: (item.recordId as string).split(SEP)[1],
+    name: item.userName as string,
+    createdAt: item.createdAt as string,
+    updatedAt: item.updatedAt as string,
+  };
+  return user;
+};
+
+const dynamoToKey = (item: Record<string, any>) => {
+  const key: UserApiKey = {
+    id: (item.recordId as string).split(SEP)[1],
+    snippet: (item.apiKey as string).substring(0, 8),
+    expiresAt: formatISO(fromUnixTime(item.expiresAt as number)),
+  };
+  return key;
+};
+
+const createUser = async (user: User, apiKey: InternalApiKey) => {
+  const cmd = new TransactWriteCommand({
+    TransactItems: [
+      {
+        Put: {
+          TableName: TABLE_NAME,
+          Item: {
+            userId: user.id,
+            recordId: mkUserId(user.email),
+            userName: user.name,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          },
+        },
+      },
+      {
+        Put: {
+          TableName: TABLE_NAME,
+          Item: {
+            userId: user.id,
+            recordId: mkUserKeyId(apiKey.id),
+            apiKey: apiKey.key,
+            expiresAt: apiKey.expiresAtUnix,
+          },
+        },
+      },
+    ],
+    ClientRequestToken: `${user.email.substring(0, 25)}#${apiKey.key.substring(0, 8)}`,
+  });
+
+  const response = await client.send(cmd);
+  console.log("Created new API user", response);
+};
+
+const findUser = async (email: string) => {
+  const cmd = new QueryCommand({
+    TableName: TABLE_NAME,
+    IndexName: ALL_USER_INDEX,
+    KeyConditionExpression: "recordId = :recId",
+    ExpressionAttributeValues: {
+      ":recId": mkUserId(email),
+    },
+    ProjectionExpression: "userId, recordId, userName, createdAt, updatedAt",
+  });
+
+  const response = await client.send(cmd);
+
+  console.log("Find user", response);
+
+  if (response.Count && response.Count > 0 && response.Items) {
+    return dynamoToUser(response.Items[0]);
+  } else {
+    return null;
+  }
+};
+
+export const users = {
+  create: createUser,
+  find: findUser,
 };

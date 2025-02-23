@@ -16,6 +16,7 @@ import {
 } from "./api/admins";
 import { chatCompletion, completion } from "./api/completions";
 import { getModel, listModels } from "./api/models";
+import { createUser } from "./api/users";
 import { LambdaBindings, responseTypes } from "./common";
 import env from "./env";
 import { validationHook } from "./middleware";
@@ -24,6 +25,7 @@ import {
   chatRoute,
   completionsRoute,
   createAdminRoute,
+  createUserRoute,
   deleteAdminRoute,
   getCurrentAdminRoute,
   getModelRoute,
@@ -287,6 +289,34 @@ app.openapi(logoutAdminRoute, async (c) => {
       {
         error: responseTypes.server_error,
         messages: ["Session creation failed"],
+      },
+      500
+    );
+  }
+});
+
+// USERS & KEYS --------
+
+app.openapi(createUserRoute, async (c) => {
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+  const body = c.req.valid("json");
+
+  console.info(`Create API user request for ${body.email} from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await createUser(body, token);
+
+    if (result.user) {
+      return c.json(result.user, 201);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Create API user failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["User creation failed"],
       },
       500
     );

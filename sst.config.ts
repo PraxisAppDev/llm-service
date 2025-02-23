@@ -24,16 +24,25 @@ export default $config({
       fields: {
         userId: "string",
         recordId: "string",
+        expiresAt: "number",
+        apiKey: "string",
       },
       primaryIndex: { hashKey: "userId", rangeKey: "recordId" },
       globalIndexes: {
-        AdminAuthIdx: {
+        AllUserIdx: {
           hashKey: "recordId",
           projection: ["userName", "passwordHash", "createdAt", "updatedAt"],
         },
         AdminSessionIdx: {
+          // TODO: restructure this to be like the UserKeyIdx
           hashKey: "recordId",
+          // TODO: add expires at as a range key here to do query filtering for expired sessions
           projection: ["expiresAt"],
+        },
+        UserKeyIdx: {
+          hashKey: "apiKey",
+          rangeKey: "expiresAt",
+          projection: "keys-only",
         },
       },
       ttl: "expiresAt",

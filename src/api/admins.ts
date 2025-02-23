@@ -40,7 +40,7 @@ export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
     return {
       error: {
         error: responseTypes.invalid_request,
-        messages: [`User with email ${req.email} already exists`],
+        messages: [`Admin with email ${req.email} already exists`],
       },
       errorStatus: 400 as 400,
     };
