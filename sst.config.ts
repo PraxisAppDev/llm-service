@@ -25,6 +25,7 @@ export default $config({
         userId: "string",
         recordId: "string",
         expiresAt: "number",
+        sessionToken: "string",
         apiKey: "string",
       },
       primaryIndex: { hashKey: "userId", rangeKey: "recordId" },
@@ -34,10 +35,9 @@ export default $config({
           projection: ["userName", "passwordHash", "createdAt", "updatedAt"],
         },
         AdminSessionIdx: {
-          // TODO: restructure this to be like the UserKeyIdx
-          hashKey: "recordId",
-          // TODO: add expires at as a range key here to do query filtering for expired sessions
-          projection: ["expiresAt"],
+          hashKey: "sessionToken",
+          rangeKey: "expiresAt",
+          projection: "keys-only",
         },
         UserKeyIdx: {
           hashKey: "apiKey",
@@ -49,13 +49,13 @@ export default $config({
     });
 
     // EMAIL
-    const email = new sst.aws.Email("Email", {
-      sender: domain,
-      dmarc: "v=DMARC1; p=reject; adkim=r;",
-      dns: sst.aws.dns({
-        zone: hostedZone,
-      }),
-    });
+    // const email = new sst.aws.Email("Email", {
+    //   sender: domain,
+    //   dmarc: "v=DMARC1; p=reject; adkim=r;",
+    //   dns: sst.aws.dns({
+    //     zone: hostedZone,
+    //   }),
+    // });
 
     // API
     const api = new sst.aws.ApiGatewayV2("Gateway", {

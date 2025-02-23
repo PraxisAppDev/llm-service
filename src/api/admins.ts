@@ -155,7 +155,7 @@ export const loginAdmin = async (email: string, password: string) => {
     // create the session
     const sessionToken = sid();
     const expiresAt = addDays(new Date(), 30);
-    await adminSessions.create(admin.user, sessionToken, expiresAt);
+    await adminSessions.create(admin.user, uid(), sessionToken, expiresAt);
 
     return {
       admin: admin.user,

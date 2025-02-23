@@ -17,6 +17,7 @@ const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const TABLE_NAME: string = Resource.Data.name;
 const ALL_USER_INDEX: string = "AllUserIdx";
 const ADMIN_SESSION_INDEX: string = "AdminSessionIdx";
+const USER_KEY_INDEX: string = "UserKeyIdx";
 
 const SEP = "#";
 const PREFIX_AUTH = "Auth";
@@ -25,7 +26,7 @@ const PREFIX_USER = "ApiUser";
 const PREFIX_USER_KEY = `${PREFIX_USER}Key`;
 
 const mkAuthId = (email: string) => `${PREFIX_AUTH}${SEP}${email}`;
-const mkSessionId = (token: string) => `${PREFIX_SESSION}${SEP}${token}`;
+const mkSessionId = (tokenId: string) => `${PREFIX_SESSION}${SEP}${tokenId}`;
 const mkUserId = (email: string) => `${PREFIX_USER}${SEP}${email}`;
 const mkUserKeyId = (keyId: string) => `${PREFIX_USER_KEY}${SEP}${keyId}`;
 
@@ -220,29 +221,36 @@ export const adminUsers = {
 
 // ADMIN SESSIONS --------
 
-const createAdminSession = async (user: AdminUser, token: string, expiresAt: Date) => {
+const createAdminSession = async (
+  user: AdminUser,
+  tokenId: string,
+  token: string,
+  expiresAt: Date
+) => {
   const cmd = new PutCommand({
     TableName: TABLE_NAME,
     Item: {
       userId: user.id,
-      recordId: mkSessionId(token),
+      recordId: mkSessionId(tokenId),
+      sessionToken: token,
       expiresAt: getUnixTime(expiresAt),
     },
   });
 
   await client.send(cmd);
-  console.log(`Created new admin session: ${user.id} -> ${user.email}`);
+  console.log(`Created new admin session: ${user.id} -> ${tokenId}`);
 };
 
 const findAdminSession = async (token: string) => {
   const cmd = new QueryCommand({
     TableName: TABLE_NAME,
     IndexName: ADMIN_SESSION_INDEX,
-    KeyConditionExpression: "recordId = :recId",
+    KeyConditionExpression: "sessionToken = :token AND expiresAt > :now",
     ExpressionAttributeValues: {
-      ":recId": mkSessionId(token),
+      ":token": token,
+      ":now": getUnixTime(new Date()),
     },
-    ProjectionExpression: "userId, recordId, expiresAt",
+    ProjectionExpression: "userId, expiresAt",
   });
 
   const response = await client.send(cmd);

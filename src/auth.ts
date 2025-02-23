@@ -1,6 +1,5 @@
 import { hash, verify } from "@node-rs/argon2";
 import { createId } from "@paralleldrive/cuid2";
-import { getUnixTime } from "date-fns";
 import { randomBytes } from "node:crypto";
 import { responseTypes } from "./common";
 import { adminSessions, adminUsers } from "./db";
@@ -67,21 +66,11 @@ export const authorizeToken = async (token?: string) => {
       },
     };
   }
-  // lookupt the token
-  const { userId, sessionExpiresAt } = await adminSessions.find(token);
+  // lookupt the token (this also excludes expired tokens)
+  const { userId } = await adminSessions.find(token);
 
-  // make sure the session is valid and not expired
+  // make sure the session is valid
   if (userId) {
-    if (getUnixTime(new Date()) >= sessionExpiresAt) {
-      // session expired!
-      return {
-        error: {
-          error: responseTypes.unauthorized,
-          messages: ["Session expired"],
-        },
-      };
-    }
-
     // lookup the admin user
     const adminUser = await adminUsers.get(userId);
 
