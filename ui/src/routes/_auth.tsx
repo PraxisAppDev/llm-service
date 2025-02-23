@@ -1,10 +1,6 @@
 import { AppBreadcrumbs } from "@/components/app-breadcrumbs";
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_auth")({
@@ -35,7 +31,7 @@ function AuthLayout() {
           <div className="bg-border mr-2 w-[1px] h-4"></div>
           <AppBreadcrumbs />
         </header>
-        <div className="px-4 py-8">
+        <div className="flex-1 flex flex-col px-4 py-8">
           <Outlet />
         </div>
       </SidebarInset>

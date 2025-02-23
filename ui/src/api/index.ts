@@ -40,6 +40,16 @@ interface UserList {
   users: ApiUser[];
 }
 
+export interface Model {
+  name: string;
+  provider: string;
+  id: string;
+}
+
+interface ModelList {
+  models: Model[];
+}
+
 interface ApiError {
   error: string;
   messages: string[];
@@ -166,6 +176,23 @@ export const getUsers = async () => {
 
   if (response.ok) {
     return (await response.json()) as UserList;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
+// MODELS --------
+
+export const getModels = async () => {
+  const response = await fetch(`${API_ROOT}/models`, {
+    method: "GET",
+    headers: GET_HEADERS,
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as ModelList;
   } else {
     const error = (await response.json()) as ApiError;
     throw new Error(error.messages[0]);
