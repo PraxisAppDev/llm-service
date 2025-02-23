@@ -12,7 +12,6 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
-import { Route as AboutImport } from './routes/about'
 import { Route as AuthImport } from './routes/_auth'
 import { Route as AuthIndexImport } from './routes/_auth/index'
 import { Route as AuthUsersImport } from './routes/_auth/users'
@@ -27,12 +26,6 @@ import { Route as AuthAdminsAdminIdChangepwImport } from './routes/_auth/admins.
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -92,13 +85,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthImport
-      parentRoute: typeof rootRoute
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -196,7 +182,6 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 export interface FileRoutesByFullPath {
   '': typeof AuthRouteWithChildren
-  '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/admins': typeof AuthAdminsRouteWithChildren
   '/users': typeof AuthUsersRoute
@@ -208,7 +193,6 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
-  '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/admins': typeof AuthAdminsRouteWithChildren
   '/users': typeof AuthUsersRoute
@@ -222,7 +206,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_auth': typeof AuthRouteWithChildren
-  '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/_auth/admins': typeof AuthAdminsRouteWithChildren
   '/_auth/users': typeof AuthUsersRoute
@@ -237,7 +220,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
-    | '/about'
     | '/login'
     | '/admins'
     | '/users'
@@ -248,7 +230,6 @@ export interface FileRouteTypes {
     | '/admins/$adminId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/about'
     | '/login'
     | '/admins'
     | '/users'
@@ -260,7 +241,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_auth'
-    | '/about'
     | '/login'
     | '/_auth/admins'
     | '/_auth/users'
@@ -274,13 +254,11 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
-  AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
-  AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
 }
 
@@ -295,7 +273,6 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_auth",
-        "/about",
         "/login"
       ]
     },
@@ -306,9 +283,6 @@ export const routeTree = rootRoute
         "/_auth/users",
         "/_auth/"
       ]
-    },
-    "/about": {
-      "filePath": "about.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
