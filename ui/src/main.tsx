@@ -7,8 +7,6 @@ import { useAuth } from "./hooks/use-auth";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 
-console.log(`Got API root: ${import.meta.env.VITE_LLMSVC_API_ROOT}`);
-
 // Create a query client
 const queryClient = new QueryClient();
 

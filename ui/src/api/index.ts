@@ -45,6 +45,9 @@ interface ApiError {
   messages: string[];
 }
 
+export const apiRoot = () => API_ROOT;
+export const apiDocs = () => `${API_ROOT}/docs`;
+
 // ADMINS --------
 
 export const getAdmins = async () => {
