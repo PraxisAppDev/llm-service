@@ -20,10 +20,32 @@ interface AdminList {
   admins: AdminUser[];
 }
 
+export interface ApiKey {
+  id: string;
+  snippet: string;
+  expiresAt: string;
+}
+
+export interface ApiUser {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  apiKeys: ApiKey[];
+}
+
+interface UserList {
+  count: number;
+  users: ApiUser[];
+}
+
 interface ApiError {
   error: string;
   messages: string[];
 }
+
+// ADMINS --------
 
 export const getAdmins = async () => {
   const response = await fetch(`${API_ROOT}/admins`, {
@@ -125,6 +147,23 @@ export const deleteAdminSession = async (userId: string) => {
   });
 
   if (!response.ok) {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
+// USERS --------
+
+export const getUsers = async () => {
+  const response = await fetch(`${API_ROOT}/users`, {
+    method: "GET",
+    headers: GET_HEADERS,
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as UserList;
+  } else {
     const error = (await response.json()) as ApiError;
     throw new Error(error.messages[0]);
   }

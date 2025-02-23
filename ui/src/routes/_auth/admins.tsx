@@ -101,7 +101,9 @@ function AdminUsers() {
       </section>
       <section className="mt-10">
         <p className="text-xl text-muted-foreground pb-4">
-          {data ? `Found ${data.count} admins` : "Loading admins..."}
+          {data
+            ? `Found ${data.count} ${data.count === 0 || data.count > 1 ? "admins" : "admin"}`
+            : "Loading admins..."}
         </p>
         {isPending && <TableSkeleton />}
         {isError && (
