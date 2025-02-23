@@ -95,6 +95,14 @@ export default $config({
         command: "npm run build",
         output: "dist",
       },
+      domain: $dev
+        ? undefined
+        : {
+            name: domain,
+            dns: sst.aws.dns({
+              zone: hostedZone,
+            }),
+          },
       dev: {
         autostart: true,
         command: "npm run dev",
