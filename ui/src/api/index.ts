@@ -50,6 +50,11 @@ interface ModelList {
   models: Model[];
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  message: string;
+}
+
 interface ApiError {
   error: string;
   messages: string[];
