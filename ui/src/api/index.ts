@@ -55,6 +55,25 @@ export interface ChatMessage {
   message: string;
 }
 
+export interface ChatReq {
+  model: string;
+  messages: ChatMessage[];
+  system: string;
+  temperature: number;
+  topP: number;
+  maxGenLen: number;
+}
+
+export interface Completion {
+  model: string;
+  generation: string;
+  stopReason: "stop" | "length";
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+}
+
 interface ApiError {
   error: string;
   messages: string[];
@@ -198,6 +217,24 @@ export const getModels = async () => {
 
   if (response.ok) {
     return (await response.json()) as ModelList;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
+// CHAT --------
+
+export const getChatCompletion = async (req: ChatReq) => {
+  const response = await fetch(`${API_ROOT}/chat/completions`, {
+    method: "POST",
+    headers: POST_HEADERS,
+    body: JSON.stringify(req),
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as Completion;
   } else {
     const error = (await response.json()) as ApiError;
     throw new Error(error.messages[0]);
