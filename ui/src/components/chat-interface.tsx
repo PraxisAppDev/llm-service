@@ -134,7 +134,7 @@ export function ChatInterface({ models }: { models: Model[] }) {
         e.stopPropagation();
         void form.handleSubmit();
       }}
-      className="h-full max-h-full flex flex-col gap-6"
+      className="h-full flex flex-col gap-6"
     >
       <div className="grid md:grid-cols-3 gap-6">
         <div className="flex flex-col gap-6 md:col-span-2">
@@ -256,7 +256,7 @@ export function ChatInterface({ models }: { models: Model[] }) {
           </div>
         </div>
       </div>
-      <ScrollArea className="flex-1 border border-muted rounded-md">
+      <ScrollArea className="h-[438px] border border-muted rounded-md">
         <div className="p-4">
           {!model && (
             <div className="flex justify-center">
@@ -276,6 +276,27 @@ export function ChatInterface({ models }: { models: Model[] }) {
             <Message key={`${idx}-${msg.role}`} msg={msg} />
           ))}
           {isBusy && <Thinking />}
+          {/* <Message
+            msg={{
+              role: "user",
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+            }}
+          />
+          <Message
+            msg={{
+              role: "assistant",
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+            }}
+          />
+          <Message
+            msg={{
+              role: "user",
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+            }}
+          /> */}
         </div>
       </ScrollArea>
       <div className="-mb-4 flex gap-4">

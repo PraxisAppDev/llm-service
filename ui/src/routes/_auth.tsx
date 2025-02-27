@@ -25,8 +25,8 @@ function AuthLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+      <SidebarInset className="h-svh">
+        <header className="flex sticky top-0 h-16 shrink-0 bg-background items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <div className="bg-border mr-2 w-[1px] h-4"></div>
           <AppBreadcrumbs />
