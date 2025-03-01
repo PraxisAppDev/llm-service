@@ -80,7 +80,12 @@ function UserApiKeys({ apiKeys }: { apiKeys: ApiKey[] }) {
 function RowActions({ userId }: { userId: string }) {
   return (
     <div className="flex justify-end gap-2">
-      <Button variant="outline" size="icon" title="Create new API key">
+      <Button
+        variant="outline"
+        size="icon"
+        title="Create new API key"
+        onClick={() => console.log("Create new key", userId)}
+      >
         <KeyRound />
       </Button>
       <Button variant="outline" size="icon" title="Delete user">

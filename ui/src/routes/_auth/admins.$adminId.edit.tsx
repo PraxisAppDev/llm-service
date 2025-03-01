@@ -52,7 +52,7 @@ function EditAdmin() {
     onError: (error) => {
       console.error(`Edit admin failed: ${error.message}`);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // console.info(`Edit admin successful! ${data.email} -> ${data.id}`);
       toast.success("Your account information updated successfully!");
       void queryClient.invalidateQueries({ queryKey: ["admins"] });
@@ -69,9 +69,9 @@ function EditAdmin() {
     validators: {
       onChange: editAdminSchema,
     },
-    onSubmit: ({ value }) => {
-      // mutation.mutate(value);
-    },
+    // onSubmit: ({ value }) => {
+    //   // mutation.mutate(value);
+    // },
   });
 
   if (!auth.user) return null;
