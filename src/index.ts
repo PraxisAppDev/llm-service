@@ -16,7 +16,7 @@ import {
 } from "./api/admins";
 import { chatCompletion, completion } from "./api/completions";
 import { getModel, listModels } from "./api/models";
-import { createUser, listUsers } from "./api/users";
+import { createUser, createUserKey, deleteUser, deleteUserKey, listUsers } from "./api/users";
 import { LambdaBindings, responseTypes } from "./common";
 import env from "./env";
 import { validationHook } from "./middleware";
@@ -25,8 +25,11 @@ import {
   chatRoute,
   completionsRoute,
   createAdminRoute,
+  createUserKeyRoute,
   createUserRoute,
   deleteAdminRoute,
+  deleteUserKeyRoute,
+  deleteUserRoute,
   getCurrentAdminRoute,
   getModelRoute,
   listAdminsRoute,
@@ -343,6 +346,85 @@ app.openapi(createUserRoute, async (c) => {
       {
         error: responseTypes.server_error,
         messages: ["User creation failed unexpectedly"],
+      },
+      500
+    );
+  }
+});
+
+app.openapi(deleteUserRoute, async (c) => {
+  const { userId } = c.req.valid("param");
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`Delete API user request for ${userId} from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await deleteUser(userId, token);
+
+    if (result.ok) {
+      return c.body(null, 204);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Delete API user failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["User deletion failed unexpectedly"],
+      },
+      500
+    );
+  }
+});
+
+app.openapi(createUserKeyRoute, async (c) => {
+  const { userId } = c.req.valid("param");
+  const { keyExpiresAt } = c.req.valid("json");
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`Create API key request for user ${userId} from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await createUserKey(userId, keyExpiresAt, token);
+
+    if (result.key) {
+      return c.json(result.key, 201);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Create API key failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["API key creation failed unexpectedly"],
+      },
+      500
+    );
+  }
+});
+
+app.openapi(deleteUserKeyRoute, async (c) => {
+  const { userId, keyId } = c.req.valid("param");
+  const token = c.req.valid("cookie")[TOKEN_COOKIE];
+
+  console.info(`Delete API key request for ${keyId} from token ${token?.substring(0, 7)}...`);
+
+  try {
+    const result = await deleteUserKey(userId, keyId, token);
+
+    if (result.ok) {
+      return c.body(null, 204);
+    } else {
+      return c.json(result.error, result.errorStatus);
+    }
+  } catch (e) {
+    console.error("Delete API key failed", e);
+    return c.json(
+      {
+        error: responseTypes.server_error,
+        messages: ["API key deletion failed unexpectedly"],
       },
       500
     );

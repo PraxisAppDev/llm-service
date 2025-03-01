@@ -10,12 +10,15 @@ import {
   CompletionReqSchema,
   CompletionResSchema,
   CreateAdminReqSchema,
+  CreateUserKeyReqSchema,
   CreateUserReqSchema,
   ErrorResSchema,
   GetModelReqSchema,
   ModelResSchema,
   ModelsResSchema,
   SetCookieHeadersSchema,
+  UserApiKeySchema,
+  UserIdKeyIdReqParamsSchema,
   UserIdReqParamsSchema,
   UserListResSchema,
   UserResSchema,
@@ -229,6 +232,71 @@ export const createUserRoute = createRoute({
     201: {
       description: "API user created successfully",
       content: { "application/json": { schema: UserResSchema } },
+    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
+export const deleteUserRoute = createRoute({
+  method: "delete",
+  path: "/users/{userId}",
+  summary: "Delete the specified API user",
+  tags: ["Users & Keys"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+    params: UserIdReqParamsSchema,
+  },
+  responses: {
+    204: {
+      description: "API user deleted successfully",
+    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
+export const createUserKeyRoute = createRoute({
+  method: "post",
+  path: "/users/{userId}/keys",
+  summary: "Create a new API key for the specified API user",
+  tags: ["Users & Keys"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+    params: UserIdReqParamsSchema,
+    body: {
+      required: true,
+      content: { "application/json": { schema: CreateUserKeyReqSchema } },
+    },
+  },
+  responses: {
+    201: {
+      description: "API user created successfully",
+      content: { "application/json": { schema: UserApiKeySchema } },
+    },
+    400: RES_400,
+    401: RES_401,
+    500: RES_500,
+  },
+});
+
+export const deleteUserKeyRoute = createRoute({
+  method: "delete",
+  path: "/users/{userId}/keys/{keyId}",
+  summary: "Delete the specified API key for the specified API user",
+  tags: ["Users & Keys"],
+  security: [{ SessionAuth: [] }],
+  request: {
+    cookies: AuthorizedReqCookiesSchema,
+    params: UserIdKeyIdReqParamsSchema,
+  },
+  responses: {
+    204: {
+      description: "API key deleted successfully",
     },
     400: RES_400,
     401: RES_401,

@@ -69,3 +69,86 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
     user: { ...user, apiKeys: [apiKey] },
   };
 };
+
+export const deleteUser = async (userId: string, token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  if (await apiUsers.delete(userId)) {
+    return { ok: true };
+  } else {
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: ["API user does not exist"],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
+};
+
+export const createUserKey = async (userId: string, expiresAt: string, token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  const user = await apiUsers.get(userId);
+
+  if (!user) {
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: ["API user does not exist"],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
+
+  const fullKey = key();
+  const expiresAtUnix = getUnixTime(parseISO(expiresAt));
+  const apiKey = {
+    id: uid(),
+    snippet: fullKey.substring(0, 8),
+    expiresAt: expiresAt,
+  };
+
+  await apiUsers.createKey(user, { ...apiKey, key: fullKey, expiresAtUnix });
+
+  return {
+    key: apiKey,
+  };
+};
+
+export const deleteUserKey = async (userId: string, keyId: string, token?: string) => {
+  const auth = await authorizeToken(token);
+
+  if (auth.error) {
+    return {
+      error: auth.error,
+      errorStatus: 401 as 401,
+    };
+  }
+
+  if (await apiUsers.deleteKey(userId, keyId)) {
+    return { ok: true };
+  } else {
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: ["API key does not exist"],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
+};

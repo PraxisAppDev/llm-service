@@ -67,7 +67,7 @@ export const authorizeToken = async (token?: string) => {
     };
   }
   // lookupt the token (this also excludes expired tokens)
-  const { userId } = await adminSessions.find(token);
+  const { userId, tokenId } = await adminSessions.find(token);
 
   // make sure the session is valid
   if (userId) {
@@ -76,7 +76,7 @@ export const authorizeToken = async (token?: string) => {
 
     if (adminUser) {
       // success! good authorization
-      return { adminUser: adminUser };
+      return { adminUser: adminUser, tokenId };
     } else {
       // strange state mismatch (deleted user?)
       return {

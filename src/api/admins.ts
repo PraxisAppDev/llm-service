@@ -130,7 +130,17 @@ export const deleteAdmin = async (userId: string, token?: string) => {
     };
   }
 
-  return { ok: true };
+  if (await adminUsers.delete(userId)) {
+    return { ok: true };
+  } else {
+    return {
+      error: {
+        error: responseTypes.invalid_request,
+        messages: ["Admins does not exist"],
+      },
+      errorStatus: 400 as 400,
+    };
+  }
 };
 
 export const currentAdmin = async (token?: string) => {
@@ -190,7 +200,7 @@ export const logoutAdmin = async (userId: string, token?: string) => {
 
   if (userId === auth.adminUser.user.id) {
     // valid session that matches the given user ID; delete the session
-    await adminSessions.delete(userId, token!);
+    await adminSessions.delete(userId, auth.tokenId);
     return { ok: true };
   } else {
     return {

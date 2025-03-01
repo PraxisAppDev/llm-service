@@ -69,7 +69,7 @@ const cmd = new PutCommand({
   TableName: sst.table,
   Item: {
     userId: adminId,
-    recordId: `Auth#${adminEmail}`,
+    recordId: `AuthUser#${adminEmail}`,
     userName: adminName,
     passwordHash: pwh,
     createdAt: now,

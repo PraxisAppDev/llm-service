@@ -162,6 +162,19 @@ export const UserIdReqParamsSchema = z
   })
   .openapi("UserIdRequestParams");
 
+export const UserIdKeyIdReqParamsSchema = z
+  .object({
+    userId,
+    keyId: z
+      .string({ required_error: "Key ID is required" })
+      .cuid2({ message: "Invalid key ID format" })
+      .openapi({
+        description: "The key's unique ID",
+        example: "s7fdglfcb4ails69xqif778j",
+      }),
+  })
+  .openapi("UserIdKeyIdRequestParams");
+
 // REQUEST BODIES --------
 
 export const CreateAdminReqSchema = z
@@ -209,6 +222,17 @@ export const CreateUserReqSchema = z
   .openapi("CreateUserRequest");
 
 export type CreateUserRequest = z.infer<typeof CreateUserReqSchema>;
+
+export const CreateUserKeyReqSchema = z
+  .object({
+    keyExpiresAt: z
+      .string({ required_error: "Key expires at is required" })
+      .datetime({ message: "Key expires at must be a valid ISO 8601 datetime" })
+      .openapi({
+        description: "When the key will expire",
+      }),
+  })
+  .openapi("CreateUserKeyRequest");
 
 export const CompletionReqSchema = z
   .object({
@@ -273,7 +297,7 @@ export const AdminListResSchema = z
   })
   .openapi("ListAdminsResponse");
 
-const UserApiKeySchema = z.object({
+export const UserApiKeySchema = z.object({
   id: z.string().cuid2().openapi({ description: "The API key ID" }),
   snippet: z
     .string()

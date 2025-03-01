@@ -2,6 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
+  GetCommand,
   PutCommand,
   QueryCommand,
   ScanCommand,
@@ -20,8 +21,8 @@ const ADMIN_SESSION_INDEX: string = "AdminSessionIdx";
 const USER_KEY_INDEX: string = "UserKeyIdx";
 
 const SEP = "#";
-const PREFIX_AUTH = "Auth";
-const PREFIX_SESSION = "Session";
+const PREFIX_AUTH = "AuthUser";
+const PREFIX_SESSION = `${PREFIX_AUTH}Session`;
 const PREFIX_USER = "ApiUser";
 const PREFIX_USER_KEY = `${PREFIX_USER}Key`;
 
@@ -102,35 +103,38 @@ const updateAdminPw = async (user: AdminUser, passwordHash: string) => {
 };
 
 const deleteAdminUser = async (id: string) => {
-  const cmd = new QueryCommand({
+  const qCmd = new QueryCommand({
     TableName: TABLE_NAME,
-    KeyConditionExpression: "userId = :uid",
+    KeyConditionExpression: "userId = :uid AND begins_with(recordId, :prefix)",
     ExpressionAttributeValues: {
       ":uid": id,
+      ":prefix": PREFIX_AUTH,
     },
     ProjectionExpression: "userId, recordId",
   });
 
-  const response = await client.send(cmd);
+  const qResponse = await client.send(qCmd);
 
-  console.log("Find all for user ID", response);
+  console.log("Find all for admin ID", qResponse);
 
-  if (!response.Items || response.Items.length === 0) return false;
+  if (!qResponse.Items || qResponse.Items.length === 0) return false;
 
-  // TODO use a transaction here
-
-  for (const item of response.Items) {
-    const cmd = new DeleteCommand({
-      TableName: TABLE_NAME,
-      Key: {
-        userId: item.userId as string,
-        recordId: item.recordId as string,
+  const dCmd = new TransactWriteCommand({
+    ClientRequestToken: `DELETE#${id}`,
+    TransactItems: qResponse.Items.map((item) => ({
+      Delete: {
+        TableName: TABLE_NAME,
+        Key: {
+          userId: item.userId as string,
+          recordId: item.recordId as string,
+        },
       },
-    });
+    })),
+  });
 
-    const response = await client.send(cmd);
-    console.log("Delete admin item", response);
-  }
+  const dResponse = await client.send(dCmd);
+
+  console.log("Delete admin user", dResponse);
 
   return true;
 };
@@ -250,7 +254,7 @@ const findAdminSession = async (token: string) => {
       ":token": token,
       ":now": getUnixTime(new Date()),
     },
-    ProjectionExpression: "userId, expiresAt",
+    ProjectionExpression: "userId, recordId, expiresAt",
   });
 
   const response = await client.send(cmd);
@@ -260,19 +264,20 @@ const findAdminSession = async (token: string) => {
   if (response.Count && response.Count > 0 && response.Items) {
     return {
       userId: response.Items[0].userId as string,
+      tokenId: (response.Items[0].recordId as string).split(SEP)[1],
       sessionExpiresAt: response.Items[0].expiresAt as number,
     };
   } else {
-    return { userId: null, sessionExpiresAt: null };
+    return { userId: undefined, tokenId: undefined, sessionExpiresAt: undefined };
   }
 };
 
-const deleteAdminSession = async (userId: string, token: string) => {
+const deleteAdminSession = async (userId: string, tokenId: string) => {
   const cmd = new DeleteCommand({
     TableName: TABLE_NAME,
     Key: {
       userId,
-      recordId: mkSessionId(token),
+      recordId: mkSessionId(tokenId),
     },
   });
 
@@ -365,6 +370,27 @@ const findUser = async (email: string) => {
   }
 };
 
+const getUser = async (id: string) => {
+  const cmd = new QueryCommand({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "userId = :uid AND begins_with(recordId, :prefix)",
+    ExpressionAttributeValues: {
+      ":uid": id,
+      ":prefix": `${PREFIX_USER}${SEP}`,
+    },
+  });
+
+  const response = await client.send(cmd);
+
+  console.log("Get API user", response);
+
+  if (response.Count && response.Count > 0 && response.Items) {
+    return dynamoToUser(response.Items[0]);
+  } else {
+    return null;
+  }
+};
+
 const listUsers = async () => {
   let startKey: Record<string, any> | undefined = undefined;
   const users = new Map<string, User>();
@@ -422,8 +448,105 @@ const listUsers = async () => {
   return result;
 };
 
+const deleteUser = async (id: string) => {
+  const qCmd = new QueryCommand({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "userId = :uid AND begins_with(recordId, :prefix)",
+    ExpressionAttributeValues: {
+      ":uid": id,
+      ":prefix": PREFIX_USER,
+    },
+    ProjectionExpression: "userId, recordId",
+  });
+
+  const qResponse = await client.send(qCmd);
+
+  console.log("Find API user records to delete", qResponse);
+
+  if (!qResponse.Items || qResponse.Items.length === 0) return false;
+
+  const dCmd = new TransactWriteCommand({
+    ClientRequestToken: `DELETE#${id}`,
+    TransactItems: qResponse.Items.map((item) => ({
+      Delete: {
+        TableName: TABLE_NAME,
+        Key: {
+          userId: item.userId as string,
+          recordId: item.recordId as string,
+        },
+      },
+    })),
+  });
+
+  const dResponse = await client.send(dCmd);
+
+  console.log("Delete API user", dResponse);
+
+  return true;
+};
+
+const createUserKey = async (user: User, apiKey: InternalApiKey) => {
+  const cmd = new PutCommand({
+    TableName: TABLE_NAME,
+    Item: {
+      userId: user.id,
+      recordId: mkUserKeyId(apiKey.id),
+      apiKey: apiKey.key,
+      expiresAt: apiKey.expiresAtUnix,
+    },
+  });
+
+  const response = await client.send(cmd);
+  console.log("Created new API key for user", response);
+};
+
+const deleteUserKey = async (userId: string, keyId: string) => {
+  const key = await getUserKey(userId, keyId);
+
+  if (!key) return false;
+
+  const cmd = new DeleteCommand({
+    TableName: TABLE_NAME,
+    Key: {
+      userId,
+      recordId: mkUserKeyId(keyId),
+    },
+  });
+
+  const response = await client.send(cmd);
+
+  console.log("Delete API key", response);
+
+  return true;
+};
+
+const getUserKey = async (userId: string, keyId: string) => {
+  const cmd = new GetCommand({
+    TableName: TABLE_NAME,
+    Key: {
+      userId,
+      recordId: mkUserKeyId(keyId),
+    },
+  });
+
+  const response = await client.send(cmd);
+
+  console.log("Get API key", response);
+
+  if (response.Item) {
+    return dynamoToKey(response.Item);
+  } else {
+    return null;
+  }
+};
+
 export const apiUsers = {
   list: listUsers,
   create: createUser,
+  delete: deleteUser,
   find: findUser,
+  get: getUser,
+  createKey: createUserKey,
+  deleteKey: deleteUserKey,
+  getKey: getUserKey,
 };
