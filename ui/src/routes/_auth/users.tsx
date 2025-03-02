@@ -4,10 +4,10 @@ import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/user-avatar";
 import { useUsers } from "@/hooks/use-users";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, formatDistance, fromUnixTime, getUnixTime, parseISO } from "date-fns";
-import { Ban, KeyRound, Trash } from "lucide-react";
+import { Ban, CirclePlus, KeyRound, Trash } from "lucide-react";
 
 export const Route = createFileRoute("/_auth/users")({
   component: ApiUsers,
@@ -62,7 +62,7 @@ function UserApiKeys({ apiKeys }: { apiKeys: ApiKey[] }) {
       {apiKeys.map((k, i) => (
         <div key={k.id} className="flex gap-2 items-center">
           <div className="italic">{i + 1}.</div>
-          <div className="flex flex-col">
+          <div className="flex-1 flex flex-col">
             <span className="font-mono">{k.snippet}...</span>
             <span className="text-muted-foreground text-xs whitespace-nowrap">
               Expires in {formatDistance(parseISO(k.expiresAt), now)}
@@ -101,7 +101,14 @@ function ApiUsers() {
   return (
     <>
       <section className="typography">
-        <h1>API Users</h1>
+        <header className="flex justify-between">
+          <h1>API Users</h1>
+          <Button asChild>
+            <Link from={Route.fullPath} to="new">
+              <CirclePlus /> Create user
+            </Link>
+          </Button>
+        </header>
         <p>
           API users can exercise LLM-related endpoints of the <em>LLM Service</em>&apos;s API using
           their assigned API keys. API users cannot access this console.

@@ -21,6 +21,7 @@
     "@aws-sdk/client-bedrock-runtime": "^3.738.0",
     "@aws-sdk/client-dynamodb": "^3.744.0",
     "@aws-sdk/lib-dynamodb": "^3.744.0",
+    "@date-fns/utc": "^2.1.0",
     "@hono/swagger-ui": "^0.5.0",
     "@hono/zod-openapi": "^0.18.3",
     "@node-rs/argon2": "^2.0.2",

@@ -214,7 +214,7 @@ export const CreateUserReqSchema = z
     email,
     keyExpiresAt: z
       .string({ required_error: "Key expires at is required" })
-      .datetime({ message: "Key expires at must be a valid ISO 8601 datetime" })
+      .datetime({ message: "Key expires at must be a valid ISO 8601 datetime", offset: true })
       .openapi({
         description: "When the user's first key will expire",
       }),
@@ -227,7 +227,7 @@ export const CreateUserKeyReqSchema = z
   .object({
     keyExpiresAt: z
       .string({ required_error: "Key expires at is required" })
-      .datetime({ message: "Key expires at must be a valid ISO 8601 datetime" })
+      .datetime({ message: "Key expires at must be a valid ISO 8601 datetime", offset: true })
       .openapi({
         description: "When the key will expire",
       }),
@@ -297,14 +297,16 @@ export const AdminListResSchema = z
   })
   .openapi("ListAdminsResponse");
 
-export const UserApiKeySchema = z.object({
-  id: z.string().cuid2().openapi({ description: "The API key ID" }),
-  snippet: z
-    .string()
-    .length(8)
-    .openapi({ description: "Short snippet of the API key for display" }),
-  expiresAt: z.string().datetime().openapi({ description: "Date/time When the API key expires" }),
-});
+export const UserApiKeySchema = z
+  .object({
+    id: z.string().cuid2().openapi({ description: "The API key ID" }),
+    snippet: z
+      .string()
+      .length(8)
+      .openapi({ description: "Short snippet of the API key for display" }),
+    expiresAt: z.string().datetime().openapi({ description: "Date/time When the API key expires" }),
+  })
+  .openapi("UserKeyResponse");
 
 export type UserApiKey = z.infer<typeof UserApiKeySchema>;
 export type InternalApiKey = UserApiKey & { key: string; expiresAtUnix: number };

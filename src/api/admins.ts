@@ -1,3 +1,4 @@
+import { UTCDate } from "@date-fns/utc";
 import { addDays, formatISO } from "date-fns";
 import { authorizeToken, pwHash, pwVerify, sid, uid } from "../auth";
 import { responseTypes } from "../common";
@@ -48,7 +49,7 @@ export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
 
   const id = uid();
   const pwh = await pwHash(req.password);
-  const now = formatISO(new Date());
+  const now = formatISO(new UTCDate());
 
   const admin = {
     id,
@@ -101,7 +102,7 @@ export const changeAdminPw = async (req: ChangeAdminPwRequest, userId: string, t
     };
   }
 
-  const updatedUser = { ...auth.adminUser.user, updatedAt: formatISO(new Date()) };
+  const updatedUser = { ...auth.adminUser.user, updatedAt: formatISO(new UTCDate()) };
   const pwh = await pwHash(req.newPassword);
 
   await adminUsers.updatePw(updatedUser, pwh);
@@ -164,7 +165,7 @@ export const loginAdmin = async (email: string, password: string) => {
   if (admin && (await pwVerify(admin.passwordHash, password))) {
     // create the session
     const sessionToken = sid();
-    const expiresAt = addDays(new Date(), 30);
+    const expiresAt = addDays(new UTCDate(), 30);
     await adminSessions.create(admin.user, uid(), sessionToken, expiresAt);
 
     return {

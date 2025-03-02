@@ -9,6 +9,7 @@ import {
   TransactWriteCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { UTCDate } from "@date-fns/utc";
 import { formatISO, fromUnixTime, getUnixTime } from "date-fns";
 import { Resource } from "sst";
 import { AdminUser, InternalApiKey, User, UserApiKey, UserWithKeys } from "./schemas";
@@ -252,7 +253,7 @@ const findAdminSession = async (token: string) => {
     KeyConditionExpression: "sessionToken = :token AND expiresAt > :now",
     ExpressionAttributeValues: {
       ":token": token,
-      ":now": getUnixTime(new Date()),
+      ":now": getUnixTime(new UTCDate()),
     },
     ProjectionExpression: "userId, recordId, expiresAt",
   });

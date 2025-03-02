@@ -40,6 +40,16 @@ interface UserList {
   users: ApiUser[];
 }
 
+interface CreateUserReq {
+  name: string;
+  email: string;
+  keyExpiresAt: string;
+}
+
+interface CreateKeyReq {
+  keyExpiresAt: string;
+}
+
 export interface Model {
   name: string;
   provider: string;
@@ -200,6 +210,50 @@ export const getUsers = async () => {
 
   if (response.ok) {
     return (await response.json()) as UserList;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
+export const createUser = async (req: CreateUserReq) => {
+  const response = await fetch(`${API_ROOT}/users`, {
+    method: "POST",
+    headers: POST_HEADERS,
+    body: JSON.stringify(req),
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as ApiUser;
+  } else {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
+export const deleteUser = async (userId: string) => {
+  const response = await fetch(`${API_ROOT}/users/${userId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
+export const createUserKey = async (userId: string, req: CreateKeyReq) => {
+  const response = await fetch(`${API_ROOT}/users/${userId}/keys`, {
+    method: "POST",
+    headers: POST_HEADERS,
+    body: JSON.stringify(req),
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    return (await response.json()) as ApiKey;
   } else {
     const error = (await response.json()) as ApiError;
     throw new Error(error.messages[0]);

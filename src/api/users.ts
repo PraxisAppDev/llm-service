@@ -1,3 +1,4 @@
+import { utc, UTCDate } from "@date-fns/utc";
 import { formatISO, getUnixTime, parseISO } from "date-fns";
 import { authorizeToken, key, uid } from "../auth";
 import { responseTypes } from "../common";
@@ -46,7 +47,7 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
     };
   }
 
-  const now = formatISO(new Date());
+  const now = formatISO(new UTCDate());
   const user = {
     id: uid(),
     name: req.name,
@@ -56,7 +57,7 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
   };
 
   const fullKey = key();
-  const expiresAtUnix = getUnixTime(parseISO(req.keyExpiresAt));
+  const expiresAtUnix = getUnixTime(parseISO(req.keyExpiresAt, { in: utc }));
   const apiKey = {
     id: uid(),
     snippet: fullKey.substring(0, 8),
@@ -116,7 +117,7 @@ export const createUserKey = async (userId: string, expiresAt: string, token?: s
   }
 
   const fullKey = key();
-  const expiresAtUnix = getUnixTime(parseISO(expiresAt));
+  const expiresAtUnix = getUnixTime(parseISO(expiresAt, { in: utc }));
   const apiKey = {
     id: uid(),
     snippet: fullKey.substring(0, 8),

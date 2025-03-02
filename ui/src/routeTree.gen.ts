@@ -17,6 +17,7 @@ import { Route as AuthIndexImport } from './routes/_auth/index'
 import { Route as AuthUsersImport } from './routes/_auth/users'
 import { Route as AuthPlaygroundImport } from './routes/_auth/playground'
 import { Route as AuthAdminsImport } from './routes/_auth/admins'
+import { Route as AuthUsersNewImport } from './routes/_auth/users.new'
 import { Route as AuthAdminsNewImport } from './routes/_auth/admins.new'
 import { Route as AuthAdminsAdminIdEditImport } from './routes/_auth/admins.$adminId.edit'
 import { Route as AuthAdminsAdminIdDeleteImport } from './routes/_auth/admins.$adminId.delete'
@@ -57,6 +58,12 @@ const AuthAdminsRoute = AuthAdminsImport.update({
   id: '/admins',
   path: '/admins',
   getParentRoute: () => AuthRoute,
+} as any)
+
+const AuthUsersNewRoute = AuthUsersNewImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthUsersRoute,
 } as any)
 
 const AuthAdminsNewRoute = AuthAdminsNewImport.update({
@@ -136,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminsNewImport
       parentRoute: typeof AuthAdminsImport
     }
+    '/_auth/users/new': {
+      id: '/_auth/users/new'
+      path: '/new'
+      fullPath: '/users/new'
+      preLoaderRoute: typeof AuthUsersNewImport
+      parentRoute: typeof AuthUsersImport
+    }
     '/_auth/admins/$adminId/changepw': {
       id: '/_auth/admins/$adminId/changepw'
       path: '/$adminId/changepw'
@@ -180,17 +194,29 @@ const AuthAdminsRouteWithChildren = AuthAdminsRoute._addFileChildren(
   AuthAdminsRouteChildren,
 )
 
+interface AuthUsersRouteChildren {
+  AuthUsersNewRoute: typeof AuthUsersNewRoute
+}
+
+const AuthUsersRouteChildren: AuthUsersRouteChildren = {
+  AuthUsersNewRoute: AuthUsersNewRoute,
+}
+
+const AuthUsersRouteWithChildren = AuthUsersRoute._addFileChildren(
+  AuthUsersRouteChildren,
+)
+
 interface AuthRouteChildren {
   AuthAdminsRoute: typeof AuthAdminsRouteWithChildren
   AuthPlaygroundRoute: typeof AuthPlaygroundRoute
-  AuthUsersRoute: typeof AuthUsersRoute
+  AuthUsersRoute: typeof AuthUsersRouteWithChildren
   AuthIndexRoute: typeof AuthIndexRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthAdminsRoute: AuthAdminsRouteWithChildren,
   AuthPlaygroundRoute: AuthPlaygroundRoute,
-  AuthUsersRoute: AuthUsersRoute,
+  AuthUsersRoute: AuthUsersRouteWithChildren,
   AuthIndexRoute: AuthIndexRoute,
 }
 
@@ -201,9 +227,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/admins': typeof AuthAdminsRouteWithChildren
   '/playground': typeof AuthPlaygroundRoute
-  '/users': typeof AuthUsersRoute
+  '/users': typeof AuthUsersRouteWithChildren
   '/': typeof AuthIndexRoute
   '/admins/new': typeof AuthAdminsNewRoute
+  '/users/new': typeof AuthUsersNewRoute
   '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
@@ -213,9 +240,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admins': typeof AuthAdminsRouteWithChildren
   '/playground': typeof AuthPlaygroundRoute
-  '/users': typeof AuthUsersRoute
+  '/users': typeof AuthUsersRouteWithChildren
   '/': typeof AuthIndexRoute
   '/admins/new': typeof AuthAdminsNewRoute
+  '/users/new': typeof AuthUsersNewRoute
   '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
@@ -227,9 +255,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_auth/admins': typeof AuthAdminsRouteWithChildren
   '/_auth/playground': typeof AuthPlaygroundRoute
-  '/_auth/users': typeof AuthUsersRoute
+  '/_auth/users': typeof AuthUsersRouteWithChildren
   '/_auth/': typeof AuthIndexRoute
   '/_auth/admins/new': typeof AuthAdminsNewRoute
+  '/_auth/users/new': typeof AuthUsersNewRoute
   '/_auth/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/_auth/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/_auth/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
@@ -245,6 +274,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/'
     | '/admins/new'
+    | '/users/new'
     | '/admins/$adminId/changepw'
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
@@ -256,6 +286,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/'
     | '/admins/new'
+    | '/users/new'
     | '/admins/$adminId/changepw'
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
@@ -268,6 +299,7 @@ export interface FileRouteTypes {
     | '/_auth/users'
     | '/_auth/'
     | '/_auth/admins/new'
+    | '/_auth/users/new'
     | '/_auth/admins/$adminId/changepw'
     | '/_auth/admins/$adminId/delete'
     | '/_auth/admins/$adminId/edit'
@@ -326,7 +358,10 @@ export const routeTree = rootRoute
     },
     "/_auth/users": {
       "filePath": "_auth/users.tsx",
-      "parent": "/_auth"
+      "parent": "/_auth",
+      "children": [
+        "/_auth/users/new"
+      ]
     },
     "/_auth/": {
       "filePath": "_auth/index.tsx",
@@ -335,6 +370,10 @@ export const routeTree = rootRoute
     "/_auth/admins/new": {
       "filePath": "_auth/admins.new.tsx",
       "parent": "/_auth/admins"
+    },
+    "/_auth/users/new": {
+      "filePath": "_auth/users.new.tsx",
+      "parent": "/_auth/users"
     },
     "/_auth/admins/$adminId/changepw": {
       "filePath": "_auth/admins.$adminId.changepw.tsx",
