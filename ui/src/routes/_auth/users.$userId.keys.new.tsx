@@ -1,4 +1,4 @@
-import { createUser } from "@/api";
+import { createUserKey } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,51 +22,49 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export const Route = createFileRoute("/_auth/users/new")({
-  component: CreateUser,
+export const Route = createFileRoute("/_auth/users/$userId/keys/new")({
+  component: RouteComponent,
 });
 
-const createUserSchema = z.object({
-  email: z.string().email("Email must be a valid email address"),
-  name: z.string().nonempty("Name must not be empty"),
+const createKeySchema = z.object({
   keyExpiresAt: z
     .string()
     .datetime({ message: "Key expires at must be a valid ISO 8601 datetime", offset: true }),
 });
-type CreateUserParams = z.infer<typeof createUserSchema>;
+type CreateKeyParams = z.infer<typeof createKeySchema>;
 
-function CreateUser() {
+function RouteComponent() {
+  const { userId } = Route.useParams();
   const queryClient = useQueryClient();
   const navigate = Route.useNavigate();
   const goBack = useCallback(() => {
-    setTimeout(() => void navigate({ from: Route.fullPath, to: "..", replace: true }), 150);
+    setTimeout(() => void navigate({ from: Route.fullPath, to: "../../..", replace: true }), 150);
   }, [navigate]);
   const [open, setOpen] = useState(true);
   const [expires, setExpires] = useState<Date | undefined>(undefined);
   const mutation = useMutation({
-    mutationKey: ["createUser"],
-    mutationFn: (params: CreateUserParams) => {
-      return createUser(params);
+    mutationKey: ["createUserKey"],
+    mutationFn: (params: CreateKeyParams) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      return createUserKey(userId, params);
     },
     onError: (error) => {
-      console.error(`Create user failed: ${error.message}`);
+      console.error(`Create user key failed: ${error.message}`);
     },
     onSuccess: (data) => {
-      console.info(`Create user successful! ${data.email} -> ${data.id}`);
-      toast.success("New user created successfully!");
+      console.info(`Create user key successful! ${userId} -> ${data.id}`);
+      toast.success("New API key created successfully!");
       void queryClient.invalidateQueries({ queryKey: ["users"] });
       setOpen(false);
       goBack();
     },
   });
-  const form = useForm<CreateUserParams>({
+  const form = useForm<CreateKeyParams>({
     defaultValues: {
-      name: "",
-      email: "",
       keyExpiresAt: "",
     },
     validators: {
-      onChange: createUserSchema,
+      onChange: createKeySchema,
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
@@ -85,10 +83,11 @@ function CreateUser() {
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create new user</DialogTitle>
+          <DialogTitle>Create new API key</DialogTitle>
           <DialogDescription>
-            Add a new user that will have access to the LLM APIs. Their initial API key will be
-            emailed to them automatically!
+            Create a new API key for user{" "}
+            <span className="font-semibold text-foreground">{userId}</span>. Their new API key will
+            be emailed to them!
           </DialogDescription>
         </DialogHeader>
         <form
@@ -100,46 +99,6 @@ function CreateUser() {
           }}
         >
           <div className="flex flex-col gap-6">
-            <div className="grid gap-3">
-              <form.Field name="name">
-                {(field) => (
-                  <>
-                    <Label htmlFor={field.name}>Name</Label>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      type="text"
-                      autoComplete="name"
-                      required
-                      disabled={isBusy}
-                    />
-                  </>
-                )}
-              </form.Field>
-            </div>
-            <div className="grid gap-3">
-              <form.Field name="email">
-                {(field) => (
-                  <>
-                    <Label htmlFor={field.name}>Email</Label>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      type="email"
-                      autoComplete="email"
-                      required
-                      disabled={isBusy}
-                    />
-                  </>
-                )}
-              </form.Field>
-            </div>
             <div className="grid gap-3">
               <form.Field name="keyExpiresAt">
                 {(field) => (

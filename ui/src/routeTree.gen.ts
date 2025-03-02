@@ -22,6 +22,7 @@ import { Route as AuthAdminsNewImport } from './routes/_auth/admins.new'
 import { Route as AuthAdminsAdminIdEditImport } from './routes/_auth/admins.$adminId.edit'
 import { Route as AuthAdminsAdminIdDeleteImport } from './routes/_auth/admins.$adminId.delete'
 import { Route as AuthAdminsAdminIdChangepwImport } from './routes/_auth/admins.$adminId.changepw'
+import { Route as AuthUsersUserIdKeysNewImport } from './routes/_auth/users.$userId.keys.new'
 
 // Create/Update Routes
 
@@ -88,6 +89,12 @@ const AuthAdminsAdminIdChangepwRoute = AuthAdminsAdminIdChangepwImport.update({
   id: '/$adminId/changepw',
   path: '/$adminId/changepw',
   getParentRoute: () => AuthAdminsRoute,
+} as any)
+
+const AuthUsersUserIdKeysNewRoute = AuthUsersUserIdKeysNewImport.update({
+  id: '/$userId/keys/new',
+  path: '/$userId/keys/new',
+  getParentRoute: () => AuthUsersRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -171,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminsAdminIdEditImport
       parentRoute: typeof AuthAdminsImport
     }
+    '/_auth/users/$userId/keys/new': {
+      id: '/_auth/users/$userId/keys/new'
+      path: '/$userId/keys/new'
+      fullPath: '/users/$userId/keys/new'
+      preLoaderRoute: typeof AuthUsersUserIdKeysNewImport
+      parentRoute: typeof AuthUsersImport
+    }
   }
 }
 
@@ -196,10 +210,12 @@ const AuthAdminsRouteWithChildren = AuthAdminsRoute._addFileChildren(
 
 interface AuthUsersRouteChildren {
   AuthUsersNewRoute: typeof AuthUsersNewRoute
+  AuthUsersUserIdKeysNewRoute: typeof AuthUsersUserIdKeysNewRoute
 }
 
 const AuthUsersRouteChildren: AuthUsersRouteChildren = {
   AuthUsersNewRoute: AuthUsersNewRoute,
+  AuthUsersUserIdKeysNewRoute: AuthUsersUserIdKeysNewRoute,
 }
 
 const AuthUsersRouteWithChildren = AuthUsersRoute._addFileChildren(
@@ -234,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
 }
 
 export interface FileRoutesByTo {
@@ -247,6 +264,7 @@ export interface FileRoutesByTo {
   '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
 }
 
 export interface FileRoutesById {
@@ -262,6 +280,7 @@ export interface FileRoutesById {
   '/_auth/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/_auth/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/_auth/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/_auth/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
 }
 
 export interface FileRouteTypes {
@@ -278,6 +297,7 @@ export interface FileRouteTypes {
     | '/admins/$adminId/changepw'
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
+    | '/users/$userId/keys/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -290,6 +310,7 @@ export interface FileRouteTypes {
     | '/admins/$adminId/changepw'
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
+    | '/users/$userId/keys/new'
   id:
     | '__root__'
     | '/_auth'
@@ -303,6 +324,7 @@ export interface FileRouteTypes {
     | '/_auth/admins/$adminId/changepw'
     | '/_auth/admins/$adminId/delete'
     | '/_auth/admins/$adminId/edit'
+    | '/_auth/users/$userId/keys/new'
   fileRoutesById: FileRoutesById
 }
 
@@ -360,7 +382,8 @@ export const routeTree = rootRoute
       "filePath": "_auth/users.tsx",
       "parent": "/_auth",
       "children": [
-        "/_auth/users/new"
+        "/_auth/users/new",
+        "/_auth/users/$userId/keys/new"
       ]
     },
     "/_auth/": {
@@ -386,6 +409,10 @@ export const routeTree = rootRoute
     "/_auth/admins/$adminId/edit": {
       "filePath": "_auth/admins.$adminId.edit.tsx",
       "parent": "/_auth/admins"
+    },
+    "/_auth/users/$userId/keys/new": {
+      "filePath": "_auth/users.$userId.keys.new.tsx",
+      "parent": "/_auth/users"
     }
   }
 }
