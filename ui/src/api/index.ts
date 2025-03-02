@@ -260,6 +260,18 @@ export const createUserKey = async (userId: string, req: CreateKeyReq) => {
   }
 };
 
+export const deleteUserKey = async (userId: string, keyId: string) => {
+  const response = await fetch(`${API_ROOT}/users/${userId}/keys/${keyId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as ApiError;
+    throw new Error(error.messages[0]);
+  }
+};
+
 // MODELS --------
 
 export const getModels = async () => {

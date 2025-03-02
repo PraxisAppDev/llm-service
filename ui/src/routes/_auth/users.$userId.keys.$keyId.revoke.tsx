@@ -1,4 +1,4 @@
-import { deleteAdmin } from "@/api";
+import { deleteUserKey } from "@/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,39 +10,50 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useAdmins } from "@/hooks/use-admins";
+import { useUsers } from "@/hooks/use-users";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_auth/admins/$adminId/delete")({
-  component: DeleteAdmin,
+export const Route = createFileRoute("/_auth/users/$userId/keys/$keyId/revoke")({
+  component: RouteComponent,
 });
 
-function DeleteAdmin() {
+function RouteComponent() {
+  const { userId, keyId } = Route.useParams();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(true);
   const navigate = Route.useNavigate();
-  const { auth } = Route.useRouteContext();
-  const { adminId } = Route.useParams();
-  const { data } = useAdmins();
-  const validIds = useMemo(() => {
-    if (!data) return [];
-    return data.admins.map((u) => u.id);
-  }, [data]);
   const goBack = useCallback(() => {
-    setTimeout(() => void navigate({ from: Route.fullPath, to: "../..", replace: true }), 150);
+    setTimeout(
+      () => void navigate({ from: Route.fullPath, to: "../../../..", replace: true }),
+      150,
+    );
   }, [navigate]);
+  const { data } = useUsers();
+  const [validParams, user, key] = useMemo(() => {
+    if (!data) return [undefined, undefined, undefined];
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) {
+      return [false, undefined, undefined];
+    }
+    const key = user.apiKeys.find((k) => k.id === keyId);
+    if (!key) {
+      return [false, user, undefined];
+    }
+    return [true, user, key];
+  }, [userId, keyId, data]);
   const mutation = useMutation({
-    mutationKey: ["deleteAdmin"],
+    mutationKey: ["deleteUserKey"],
     mutationFn: () => {
-      return deleteAdmin(adminId);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      return deleteUserKey(userId, keyId);
     },
     onSuccess: () => {
-      console.info("Delete admin successful!", adminId);
-      toast.success("Admin deleted successfully!");
-      void queryClient.invalidateQueries({ queryKey: ["admins"] });
+      console.info(`Delete user API key successful! ${userId} -> ${keyId}`);
+      toast.success("API key deleted successfully!");
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
       setOpen(false);
       goBack();
     },
@@ -51,12 +62,10 @@ function DeleteAdmin() {
     },
   });
 
-  if (!auth.user) return null;
-  if (!data) return null;
-  if (validIds.length === 0) return null;
+  if (!data || validParams === undefined) return null;
 
-  if (adminId === auth.user.id) {
-    // don't let admins delete their own accounts
+  if (!validParams || !user || !key) {
+    // invalid user and/or key IDs
     return (
       <AlertDialog
         defaultOpen
@@ -68,8 +77,7 @@ function DeleteAdmin() {
           <AlertDialogHeader>
             <AlertDialogTitle>Invalid action</AlertDialogTitle>
             <AlertDialogDescription>
-              You cannot delete your own admin acount. If you no longer need your account, you may
-              have another admin delete it for you.
+              The selected API user and/or API key does not exist.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -79,30 +87,6 @@ function DeleteAdmin() {
       </AlertDialog>
     );
   }
-
-  if (!validIds.includes(adminId)) {
-    // can't delete invalid admin IDs
-    return (
-      <AlertDialog
-        defaultOpen
-        onOpenChange={(open) => {
-          if (!open) goBack();
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Invalid action</AlertDialogTitle>
-            <AlertDialogDescription>The selected admin does not exist.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction>Back</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  }
-
-  const admin = data.admins.find((u) => u.id === adminId)!;
 
   return (
     <AlertDialog
@@ -116,11 +100,12 @@ function DeleteAdmin() {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            You are about to delete admin{" "}
+            You are about to revoke API key{" "}
+            <span className="font-semibold text-foreground">{key.snippet}...</span> for user{" "}
             <span className="font-semibold text-foreground">
-              {admin.name} &lt;{admin.email}&gt;
+              {user.name} &lt;{user.email}&gt;
             </span>
-            . The admin will be permanently deleted. This action cannot be undone!
+            . The API key will be permanently deleted. This action cannot be undone!
           </AlertDialogDescription>
           {mutation.isError && (
             <div className="bg-destructive mt-2 p-1 rounded text-center text-sm text-destructive-foreground">

@@ -32,7 +32,7 @@ const columns = [
   columnHelper.display({
     id: "keys",
     header: "API Keys",
-    cell: ({ row }) => <UserApiKeys apiKeys={row.original.apiKeys} />,
+    cell: ({ row }) => <UserApiKeys userId={row.original.id} apiKeys={row.original.apiKeys} />,
   }),
   columnHelper.accessor((row) => getUnixTime(parseISO(row.createdAt)), {
     id: "createdAt",
@@ -50,7 +50,7 @@ const columns = [
   }),
 ];
 
-function UserApiKeys({ apiKeys }: { apiKeys: ApiKey[] }) {
+function UserApiKeys({ userId, apiKeys }: { userId: string; apiKeys: ApiKey[] }) {
   const now = new Date();
 
   if (apiKeys.length === 0) {
@@ -68,8 +68,15 @@ function UserApiKeys({ apiKeys }: { apiKeys: ApiKey[] }) {
               Expires in {formatDistance(parseISO(k.expiresAt), now)}
             </span>
           </div>
-          <Button variant="outline" size="icon" title="Revoke key">
-            <Ban className="text-destructive" />
+          <Button variant="outline" size="icon" title="Revoke key" asChild>
+            <Link
+              from={Route.fullPath}
+              to="$userId/keys/$keyId/revoke"
+              params={{ userId, keyId: k.id }}
+              replace
+            >
+              <Ban className="text-destructive" />
+            </Link>
           </Button>
         </div>
       ))}

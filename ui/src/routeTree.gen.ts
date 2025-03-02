@@ -23,6 +23,7 @@ import { Route as AuthAdminsAdminIdEditImport } from './routes/_auth/admins.$adm
 import { Route as AuthAdminsAdminIdDeleteImport } from './routes/_auth/admins.$adminId.delete'
 import { Route as AuthAdminsAdminIdChangepwImport } from './routes/_auth/admins.$adminId.changepw'
 import { Route as AuthUsersUserIdKeysNewImport } from './routes/_auth/users.$userId.keys.new'
+import { Route as AuthUsersUserIdKeysKeyIdRevokeImport } from './routes/_auth/users.$userId.keys.$keyId.revoke'
 
 // Create/Update Routes
 
@@ -96,6 +97,13 @@ const AuthUsersUserIdKeysNewRoute = AuthUsersUserIdKeysNewImport.update({
   path: '/$userId/keys/new',
   getParentRoute: () => AuthUsersRoute,
 } as any)
+
+const AuthUsersUserIdKeysKeyIdRevokeRoute =
+  AuthUsersUserIdKeysKeyIdRevokeImport.update({
+    id: '/$userId/keys/$keyId/revoke',
+    path: '/$userId/keys/$keyId/revoke',
+    getParentRoute: () => AuthUsersRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -185,6 +193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthUsersUserIdKeysNewImport
       parentRoute: typeof AuthUsersImport
     }
+    '/_auth/users/$userId/keys/$keyId/revoke': {
+      id: '/_auth/users/$userId/keys/$keyId/revoke'
+      path: '/$userId/keys/$keyId/revoke'
+      fullPath: '/users/$userId/keys/$keyId/revoke'
+      preLoaderRoute: typeof AuthUsersUserIdKeysKeyIdRevokeImport
+      parentRoute: typeof AuthUsersImport
+    }
   }
 }
 
@@ -211,11 +226,13 @@ const AuthAdminsRouteWithChildren = AuthAdminsRoute._addFileChildren(
 interface AuthUsersRouteChildren {
   AuthUsersNewRoute: typeof AuthUsersNewRoute
   AuthUsersUserIdKeysNewRoute: typeof AuthUsersUserIdKeysNewRoute
+  AuthUsersUserIdKeysKeyIdRevokeRoute: typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
 
 const AuthUsersRouteChildren: AuthUsersRouteChildren = {
   AuthUsersNewRoute: AuthUsersNewRoute,
   AuthUsersUserIdKeysNewRoute: AuthUsersUserIdKeysNewRoute,
+  AuthUsersUserIdKeysKeyIdRevokeRoute: AuthUsersUserIdKeysKeyIdRevokeRoute,
 }
 
 const AuthUsersRouteWithChildren = AuthUsersRoute._addFileChildren(
@@ -251,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
   '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
+  '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
 
 export interface FileRoutesByTo {
@@ -265,6 +283,7 @@ export interface FileRoutesByTo {
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
   '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
+  '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
 
 export interface FileRoutesById {
@@ -281,6 +300,7 @@ export interface FileRoutesById {
   '/_auth/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/_auth/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
   '/_auth/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
+  '/_auth/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
 
 export interface FileRouteTypes {
@@ -298,6 +318,7 @@ export interface FileRouteTypes {
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
     | '/users/$userId/keys/new'
+    | '/users/$userId/keys/$keyId/revoke'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -311,6 +332,7 @@ export interface FileRouteTypes {
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
     | '/users/$userId/keys/new'
+    | '/users/$userId/keys/$keyId/revoke'
   id:
     | '__root__'
     | '/_auth'
@@ -325,6 +347,7 @@ export interface FileRouteTypes {
     | '/_auth/admins/$adminId/delete'
     | '/_auth/admins/$adminId/edit'
     | '/_auth/users/$userId/keys/new'
+    | '/_auth/users/$userId/keys/$keyId/revoke'
   fileRoutesById: FileRoutesById
 }
 
@@ -383,7 +406,8 @@ export const routeTree = rootRoute
       "parent": "/_auth",
       "children": [
         "/_auth/users/new",
-        "/_auth/users/$userId/keys/new"
+        "/_auth/users/$userId/keys/new",
+        "/_auth/users/$userId/keys/$keyId/revoke"
       ]
     },
     "/_auth/": {
@@ -412,6 +436,10 @@ export const routeTree = rootRoute
     },
     "/_auth/users/$userId/keys/new": {
       "filePath": "_auth/users.$userId.keys.new.tsx",
+      "parent": "/_auth/users"
+    },
+    "/_auth/users/$userId/keys/$keyId/revoke": {
+      "filePath": "_auth/users.$userId.keys.$keyId.revoke.tsx",
       "parent": "/_auth/users"
     }
   }
