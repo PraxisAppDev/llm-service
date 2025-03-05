@@ -1,4 +1,4 @@
-import { deleteUserKey } from "@/api";
+import { deleteUser } from "@/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,54 +16,47 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_auth/users/$userId/keys/$keyId/revoke")({
-  component: RevokeKey,
+export const Route = createFileRoute("/_auth/users/$userId/delete")({
+  component: DeleteUser,
 });
 
-function RevokeKey() {
-  const { userId, keyId } = Route.useParams();
+function DeleteUser() {
+  const { userId } = Route.useParams();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(true);
   const navigate = Route.useNavigate();
   const goBack = useCallback(() => {
-    setTimeout(
-      () => void navigate({ from: Route.fullPath, to: "../../../..", replace: true }),
-      150,
-    );
+    setTimeout(() => void navigate({ from: Route.fullPath, to: "../..", replace: true }), 150);
   }, [navigate]);
   const { data } = useUsers();
-  const [validParams, user, key] = useMemo(() => {
-    if (!data) return [undefined, undefined, undefined];
+  const [validParams, user] = useMemo(() => {
+    if (!data) return [undefined, undefined];
     const user = data.users.find((u) => u.id === userId);
     if (!user) {
-      return [false, undefined, undefined];
+      return [false, undefined];
     }
-    const key = user.apiKeys.find((k) => k.id === keyId);
-    if (!key) {
-      return [false, user, undefined];
-    }
-    return [true, user, key];
-  }, [userId, keyId, data]);
+    return [true, user];
+  }, [userId, data]);
   const mutation = useMutation({
-    mutationKey: ["deleteUserKey"],
+    mutationKey: ["deleteUser"],
     mutationFn: () => {
-      return deleteUserKey(userId, keyId);
+      return deleteUser(userId);
     },
     onSuccess: () => {
-      console.info(`Delete user API key successful! ${userId} -> ${keyId}`);
-      toast.success("API key deleted successfully!");
+      console.info(`Delete user successful! ${userId}`);
+      toast.success("User deleted successfully!");
       void queryClient.invalidateQueries({ queryKey: ["users"] });
       setOpen(false);
       goBack();
     },
     onError: (error) => {
-      console.error(`Delete API key failed: ${error.message}`);
+      console.error(`Delete user failed: ${error.message}`);
     },
   });
 
   if (!data || validParams === undefined) return null;
 
-  if (!validParams || !user || !key) {
+  if (!validParams || !user) {
     // invalid user and/or key IDs
     return (
       <AlertDialog
@@ -75,9 +68,7 @@ function RevokeKey() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Invalid action</AlertDialogTitle>
-            <AlertDialogDescription>
-              The selected API user and/or API key does not exist.
-            </AlertDialogDescription>
+            <AlertDialogDescription>The selected API user does not exist.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction>Back</AlertDialogAction>
@@ -99,12 +90,12 @@ function RevokeKey() {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            You are about to revoke API key{" "}
-            <span className="font-semibold text-foreground">{key.snippet}...</span> for user{" "}
+            You are about to delete user{" "}
             <span className="font-semibold text-foreground">
               {user.name} &lt;{user.email}&gt;
             </span>
-            . The API key will be permanently deleted. This action cannot be undone!
+            . The user and their API key(s) will be permanently deleted. This action cannot be
+            undone!
           </AlertDialogDescription>
           {mutation.isError && (
             <div className="bg-destructive mt-2 p-1 rounded text-center text-sm text-destructive-foreground">

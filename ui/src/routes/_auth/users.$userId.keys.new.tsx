@@ -45,7 +45,6 @@ function CreateKey() {
   const mutation = useMutation({
     mutationKey: ["createUserKey"],
     mutationFn: (params: CreateKeyParams) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return createUserKey(userId, params);
     },
     onError: (error) => {

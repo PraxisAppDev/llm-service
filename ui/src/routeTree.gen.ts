@@ -19,6 +19,7 @@ import { Route as AuthPlaygroundImport } from './routes/_auth/playground'
 import { Route as AuthAdminsImport } from './routes/_auth/admins'
 import { Route as AuthUsersNewImport } from './routes/_auth/users.new'
 import { Route as AuthAdminsNewImport } from './routes/_auth/admins.new'
+import { Route as AuthUsersUserIdDeleteImport } from './routes/_auth/users.$userId.delete'
 import { Route as AuthAdminsAdminIdEditImport } from './routes/_auth/admins.$adminId.edit'
 import { Route as AuthAdminsAdminIdDeleteImport } from './routes/_auth/admins.$adminId.delete'
 import { Route as AuthAdminsAdminIdChangepwImport } from './routes/_auth/admins.$adminId.changepw'
@@ -72,6 +73,12 @@ const AuthAdminsNewRoute = AuthAdminsNewImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => AuthAdminsRoute,
+} as any)
+
+const AuthUsersUserIdDeleteRoute = AuthUsersUserIdDeleteImport.update({
+  id: '/$userId/delete',
+  path: '/$userId/delete',
+  getParentRoute: () => AuthUsersRoute,
 } as any)
 
 const AuthAdminsAdminIdEditRoute = AuthAdminsAdminIdEditImport.update({
@@ -186,6 +193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAdminsAdminIdEditImport
       parentRoute: typeof AuthAdminsImport
     }
+    '/_auth/users/$userId/delete': {
+      id: '/_auth/users/$userId/delete'
+      path: '/$userId/delete'
+      fullPath: '/users/$userId/delete'
+      preLoaderRoute: typeof AuthUsersUserIdDeleteImport
+      parentRoute: typeof AuthUsersImport
+    }
     '/_auth/users/$userId/keys/new': {
       id: '/_auth/users/$userId/keys/new'
       path: '/$userId/keys/new'
@@ -225,12 +239,14 @@ const AuthAdminsRouteWithChildren = AuthAdminsRoute._addFileChildren(
 
 interface AuthUsersRouteChildren {
   AuthUsersNewRoute: typeof AuthUsersNewRoute
+  AuthUsersUserIdDeleteRoute: typeof AuthUsersUserIdDeleteRoute
   AuthUsersUserIdKeysNewRoute: typeof AuthUsersUserIdKeysNewRoute
   AuthUsersUserIdKeysKeyIdRevokeRoute: typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
 
 const AuthUsersRouteChildren: AuthUsersRouteChildren = {
   AuthUsersNewRoute: AuthUsersNewRoute,
+  AuthUsersUserIdDeleteRoute: AuthUsersUserIdDeleteRoute,
   AuthUsersUserIdKeysNewRoute: AuthUsersUserIdKeysNewRoute,
   AuthUsersUserIdKeysKeyIdRevokeRoute: AuthUsersUserIdKeysKeyIdRevokeRoute,
 }
@@ -267,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
   '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
   '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
@@ -282,6 +299,7 @@ export interface FileRoutesByTo {
   '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
   '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
   '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
@@ -299,6 +317,7 @@ export interface FileRoutesById {
   '/_auth/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
   '/_auth/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
   '/_auth/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/_auth/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
   '/_auth/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
   '/_auth/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
 }
@@ -317,6 +336,7 @@ export interface FileRouteTypes {
     | '/admins/$adminId/changepw'
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
+    | '/users/$userId/delete'
     | '/users/$userId/keys/new'
     | '/users/$userId/keys/$keyId/revoke'
   fileRoutesByTo: FileRoutesByTo
@@ -331,6 +351,7 @@ export interface FileRouteTypes {
     | '/admins/$adminId/changepw'
     | '/admins/$adminId/delete'
     | '/admins/$adminId/edit'
+    | '/users/$userId/delete'
     | '/users/$userId/keys/new'
     | '/users/$userId/keys/$keyId/revoke'
   id:
@@ -346,6 +367,7 @@ export interface FileRouteTypes {
     | '/_auth/admins/$adminId/changepw'
     | '/_auth/admins/$adminId/delete'
     | '/_auth/admins/$adminId/edit'
+    | '/_auth/users/$userId/delete'
     | '/_auth/users/$userId/keys/new'
     | '/_auth/users/$userId/keys/$keyId/revoke'
   fileRoutesById: FileRoutesById
@@ -406,6 +428,7 @@ export const routeTree = rootRoute
       "parent": "/_auth",
       "children": [
         "/_auth/users/new",
+        "/_auth/users/$userId/delete",
         "/_auth/users/$userId/keys/new",
         "/_auth/users/$userId/keys/$keyId/revoke"
       ]
@@ -433,6 +456,10 @@ export const routeTree = rootRoute
     "/_auth/admins/$adminId/edit": {
       "filePath": "_auth/admins.$adminId.edit.tsx",
       "parent": "/_auth/admins"
+    },
+    "/_auth/users/$userId/delete": {
+      "filePath": "_auth/users.$userId.delete.tsx",
+      "parent": "/_auth/users"
     },
     "/_auth/users/$userId/keys/new": {
       "filePath": "_auth/users.$userId.keys.new.tsx",

@@ -92,8 +92,10 @@ function RowActions({ userId }: { userId: string }) {
           <KeyRound />
         </Link>
       </Button>
-      <Button variant="outline" size="icon" title="Delete user">
-        <Trash className="text-destructive" />
+      <Button variant="outline" size="icon" title="Delete user" asChild>
+        <Link from={Route.fullPath} to="$userId/delete" params={{ userId }} replace>
+          <Trash className="text-destructive" />
+        </Link>
       </Button>
     </div>
   );
