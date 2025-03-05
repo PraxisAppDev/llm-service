@@ -57,7 +57,7 @@ function DeleteUser() {
   if (!data || validParams === undefined) return null;
 
   if (!validParams || !user) {
-    // invalid user and/or key IDs
+    // invalid user
     return (
       <AlertDialog
         defaultOpen
