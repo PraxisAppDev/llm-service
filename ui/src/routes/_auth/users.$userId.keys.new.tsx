@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 export const Route = createFileRoute("/_auth/users/$userId/keys/new")({
-  component: RouteComponent,
+  component: CreateKey,
 });
 
 const createKeySchema = z.object({
@@ -33,7 +33,7 @@ const createKeySchema = z.object({
 });
 type CreateKeyParams = z.infer<typeof createKeySchema>;
 
-function RouteComponent() {
+function CreateKey() {
   const { userId } = Route.useParams();
   const queryClient = useQueryClient();
   const navigate = Route.useNavigate();

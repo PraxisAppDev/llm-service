@@ -17,10 +17,10 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_auth/users/$userId/keys/$keyId/revoke")({
-  component: RouteComponent,
+  component: RevokeKey,
 });
 
-function RouteComponent() {
+function RevokeKey() {
   const { userId, keyId } = Route.useParams();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(true);
