@@ -52,11 +52,11 @@ app.use(logger());
 app.use("*", cors());
 
 // define security schemes
-const APIKEY_HEADER = "X-API-KEY";
+const APIKEY_HEADER = "Authorization";
 app.openAPIRegistry.registerComponent("securitySchemes", "ApiKeyAuth", {
-  type: "apiKey",
-  in: "header",
-  name: APIKEY_HEADER,
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "API key",
 });
 
 const TOKEN_COOKIE = "SESSION-TOKEN";
@@ -435,14 +435,14 @@ app.openapi(deleteUserKeyRoute, async (c) => {
 
 app.openapi(listModelsRoute, async (c) => {
   const token = c.req.valid("cookie")[TOKEN_COOKIE];
-  const apiKey = c.req.valid("header")[APIKEY_HEADER];
+  const bearer = c.req.valid("header")[APIKEY_HEADER];
 
   console.info(
-    `List models request with token=${token?.substring(0, 7)} / key=${apiKey?.substring(0, 7)}`
+    `List models request with token=${token?.substring(0, 7)} / key=${bearer?.substring(0, 14)}`
   );
 
   try {
-    const result = await listModels(token, apiKey);
+    const result = await listModels(token, bearer);
 
     if (result.models) {
       return c.json(result, 200);
@@ -463,18 +463,18 @@ app.openapi(listModelsRoute, async (c) => {
 
 app.openapi(getModelRoute, async (c) => {
   const token = c.req.valid("cookie")[TOKEN_COOKIE];
-  const apiKey = c.req.valid("header")[APIKEY_HEADER];
+  const bearer = c.req.valid("header")[APIKEY_HEADER];
   const { model: modelId } = c.req.valid("param");
 
   console.info(
-    `Get model ${modelId} request with token=${token?.substring(0, 7)} / key=${apiKey?.substring(
+    `Get model ${modelId} request with token=${token?.substring(0, 7)} / key=${bearer?.substring(
       0,
-      7
+      14
     )}`
   );
 
   try {
-    const result = await getModel(modelId, token, apiKey);
+    const result = await getModel(modelId, token, bearer);
 
     if (result.model) {
       return c.json(result.model, 200);
@@ -497,18 +497,18 @@ app.openapi(getModelRoute, async (c) => {
 
 app.openapi(completionsRoute, async (c) => {
   const token = c.req.valid("cookie")[TOKEN_COOKIE];
-  const apiKey = c.req.valid("header")[APIKEY_HEADER];
+  const bearer = c.req.valid("header")[APIKEY_HEADER];
   const body = c.req.valid("json");
 
   console.info(
     `Completion request for model ${body.model} with token=${token?.substring(
       0,
       7
-    )} / key=${apiKey?.substring(0, 7)}`
+    )} / key=${bearer?.substring(0, 14)}`
   );
 
   try {
-    const result = await completion(body, token, apiKey);
+    const result = await completion(body, token, bearer);
 
     if (result.completion) {
       return c.json(result.completion, 200);
@@ -531,18 +531,18 @@ app.openapi(completionsRoute, async (c) => {
 
 app.openapi(chatRoute, async (c) => {
   const token = c.req.valid("cookie")[TOKEN_COOKIE];
-  const apiKey = c.req.valid("header")[APIKEY_HEADER];
+  const bearer = c.req.valid("header")[APIKEY_HEADER];
   const body = c.req.valid("json");
 
   console.info(
     `Chat completion request for model ${body.model} with token=${token?.substring(
       0,
       7
-    )} / key=${apiKey?.substring(0, 7)}`
+    )} / key=${bearer?.substring(0, 14)}`
   );
 
   try {
-    const result = await chatCompletion(body, token, apiKey);
+    const result = await chatCompletion(body, token, bearer);
 
     if (result.completion) {
       return c.json(result.completion, 200);

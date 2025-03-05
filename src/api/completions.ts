@@ -1,9 +1,9 @@
-import { authorizeTokenOrKey } from "../auth";
+import { authorizeTokenOrBearer } from "../auth";
 import { responseTypes } from "../common";
 import { llm } from "../llm";
 import { ChatRequest, CompletionRequest } from "../schemas";
 
-export const completion = async (req: CompletionRequest, token?: string, apiKey?: string) => {
+export const completion = async (req: CompletionRequest, token?: string, bearer?: string) => {
   const awsModelId = llm.getAwsModelId(req.model);
   if (!awsModelId) {
     return {
@@ -15,7 +15,7 @@ export const completion = async (req: CompletionRequest, token?: string, apiKey?
     };
   }
 
-  const auth = await authorizeTokenOrKey(token, apiKey);
+  const auth = await authorizeTokenOrBearer(token, bearer);
 
   if (auth.error) {
     return {
@@ -46,7 +46,7 @@ export const completion = async (req: CompletionRequest, token?: string, apiKey?
   };
 };
 
-export const chatCompletion = async (req: ChatRequest, token?: string, apiKey?: string) => {
+export const chatCompletion = async (req: ChatRequest, token?: string, bearer?: string) => {
   const awsModelId = llm.getAwsModelId(req.model);
   if (!awsModelId) {
     return {
@@ -58,7 +58,7 @@ export const chatCompletion = async (req: ChatRequest, token?: string, apiKey?: 
     };
   }
 
-  const auth = await authorizeTokenOrKey(token, apiKey);
+  const auth = await authorizeTokenOrBearer(token, bearer);
 
   if (auth.error) {
     return {

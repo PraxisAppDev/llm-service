@@ -1,9 +1,9 @@
-import { authorizeTokenOrKey } from "../auth";
+import { authorizeTokenOrBearer } from "../auth";
 import { responseTypes } from "../common";
 import { llm, MODELS } from "../llm";
 
-export const listModels = async (token?: string, apiKey?: string) => {
-  const auth = await authorizeTokenOrKey(token, apiKey);
+export const listModels = async (token?: string, bearer?: string) => {
+  const auth = await authorizeTokenOrBearer(token, bearer);
 
   if (auth.error) {
     return {
@@ -17,7 +17,7 @@ export const listModels = async (token?: string, apiKey?: string) => {
   };
 };
 
-export const getModel = async (modelId: string, token?: string, apiKey?: string) => {
+export const getModel = async (modelId: string, token?: string, bearer?: string) => {
   const awsModelId = llm.getAwsModelId(modelId);
   if (!awsModelId) {
     return {
@@ -29,7 +29,7 @@ export const getModel = async (modelId: string, token?: string, apiKey?: string)
     };
   }
 
-  const auth = await authorizeTokenOrKey(token, apiKey);
+  const auth = await authorizeTokenOrBearer(token, bearer);
 
   if (auth.error) {
     return {

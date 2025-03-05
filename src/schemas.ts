@@ -50,10 +50,11 @@ const updatedAt = z
   });
 
 const apiKey = z
-  .string({ required_error: "X-API-KEY header is required" })
-  .nonempty({ message: "API key can't be empty" })
+  .string({ required_error: "API key in Authorization header is required" })
+  .regex(/^Bearer\s.+/, "Malformed Authorization header")
   .openapi({
-    description: "API key to authorize the request",
+    description: "API key as a Bearer token in Authorization header",
+    example: "Bearer 29df6aeb...",
   });
 
 const model = z.string({ required_error: "Model identifier is required" }).openapi({
@@ -127,7 +128,7 @@ const usage = z
 
 export const AuthorizedReqHeadersSchema = z
   .object({
-    "X-API-KEY": apiKey.optional(),
+    Authorization: apiKey.optional(),
   })
   .openapi("AuthorizedRequestHeaders");
 

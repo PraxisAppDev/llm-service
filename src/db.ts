@@ -521,6 +521,33 @@ const deleteUserKey = async (userId: string, keyId: string) => {
   return true;
 };
 
+const findUserKey = async (apiKey: string) => {
+  const cmd = new QueryCommand({
+    TableName: TABLE_NAME,
+    IndexName: USER_KEY_INDEX,
+    KeyConditionExpression: "apiKey = :key AND expiresAt > :now",
+    ExpressionAttributeValues: {
+      ":key": apiKey,
+      ":now": getUnixTime(new UTCDate()),
+    },
+    ProjectionExpression: "userId, recordId, expiresAt",
+  });
+
+  const response = await client.send(cmd);
+
+  console.log("Find user api key", response);
+
+  if (response.Count && response.Count > 0 && response.Items) {
+    return {
+      userId: response.Items[0].userId as string,
+      keyId: (response.Items[0].recordId as string).split(SEP)[1],
+      keyExpiresAt: response.Items[0].expiresAt as number,
+    };
+  } else {
+    return { userId: undefined, keyId: undefined, keyExpiresAt: undefined };
+  }
+};
+
 const getUserKey = async (userId: string, keyId: string) => {
   const cmd = new GetCommand({
     TableName: TABLE_NAME,
@@ -549,5 +576,6 @@ export const apiUsers = {
   get: getUser,
   createKey: createUserKey,
   deleteKey: deleteUserKey,
+  findKey: findUserKey,
   getKey: getUserKey,
 };
