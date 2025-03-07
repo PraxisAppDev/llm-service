@@ -27,7 +27,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          cd ui && npm install
       - name: Install SST providers
         run: npx sst install
       - name: Deploy
