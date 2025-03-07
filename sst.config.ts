@@ -62,7 +62,7 @@ export default $config({
       cors: {
         allowOrigins: $dev ? ["http://localhost:5173", `https://${domain}`] : [`https://${domain}`],
         allowMethods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
-        allowHeaders: ["Accept", "Content-Type", "X-API-KEY"],
+        allowHeaders: ["Accept", "Content-Type", "Authorization"],
         allowCredentials: true,
       },
       domain: {
