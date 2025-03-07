@@ -1,0 +1,39 @@
+# Do a staging deploy on every push to main
+
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Setup AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.DEPLOYMENT_ROLE }}
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Install SST providers
+        run: npx sst install
+      - name: Deploy
+        run: npx sst deploy --stage staging
+      - name: Seed default admin
+        env:
+          DEFAULT_ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
+          DEFAULT_ADMIN_PW: ${{ secrets.DEFAULT_ADMIN_PW }}
+        run: npm run seed:admin "Default Admin" "$DEFAULT_ADMIN_EMAIL" "$DEFAULT_ADMIN_PW"

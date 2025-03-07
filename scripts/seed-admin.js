@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { UTCDate } from "@date-fns/utc";
 import { hash } from "@node-rs/argon2";
 import { createId } from "@paralleldrive/cuid2";
@@ -66,7 +66,32 @@ const client = DynamoDBDocumentClient.from(
   })
 );
 
-const cmd = new PutCommand({
+const findCmd = new QueryCommand({
+  TableName: sst.table,
+  IndexName: "AllUserIdx",
+  KeyConditionExpression: "recordId = :recId",
+  ExpressionAttributeValues: {
+    ":recId": `AuthUser#${adminEmail}`,
+  },
+  ProjectionExpression: "userId, recordId",
+});
+
+try {
+  console.info("[*] Checking if admin already exists...");
+  const r = await client.send(findCmd);
+
+  if (r.Count && r.Count > 0) {
+    console.info(`[+] Admin ${adminEmail} alredy exists -> ${r.Items[0].userId}`);
+    process.exit(0);
+  } else {
+    console.info("[+] Admin does not exist");
+  }
+} catch (e) {
+  console.error("[-] Failed to check for admin user", e);
+  process.exit(1);
+}
+
+const createCmd = new PutCommand({
   TableName: sst.table,
   Item: {
     userId: adminId,
@@ -80,10 +105,11 @@ const cmd = new PutCommand({
 
 try {
   console.info("[*] Sending admin creation request...");
-  await client.send(cmd);
+  await client.send(createCmd);
   console.info(`[+] Created admin user: ${adminEmail} -> ${adminId}`);
 } catch (e) {
   console.error("[-] Failed to create admin user", e);
+  process.exit(1);
 }
 
 console.info("[*] Done");

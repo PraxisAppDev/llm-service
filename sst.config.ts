@@ -75,6 +75,7 @@ export default $config({
 
     api.route("ANY /{proxy+}", {
       handler: "src/index.handler",
+      architecture: "arm64",
       runtime: "nodejs22.x",
       link: [db],
       permissions: [
