@@ -1,12 +1,10 @@
-# Do a staging deploy on every push to main
+# Do a production deploy on every release publish
 
-name: Deploy Staging
+name: Deploy Production
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  release:
+    types: [published]
 
 jobs:
   Deploy:
@@ -35,7 +33,7 @@ jobs:
       - name: Install SST providers
         run: npx sst install
       - name: Deploy
-        run: npx sst deploy --stage staging
+        run: npx sst deploy --stage production
       - name: Seed default admin
         env:
           DEFAULT_ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
