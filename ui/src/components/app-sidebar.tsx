@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { appVersion, env } from "@/lib/utils";
 import { Route as adminsRoute } from "@/routes/_auth/admins";
 import { Route as indexRoute } from "@/routes/_auth/index";
 import { Route as playgroundRoute } from "@/routes/_auth/playground";
@@ -139,7 +140,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel>Support</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {appVersion()} &middot; {env.stage}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {refItems.map((item) => (

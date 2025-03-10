@@ -126,6 +126,7 @@ export default $config({
     });
 
     return {
+      domain,
       table: db.name,
       api: api.url,
       ui: ui.url,
