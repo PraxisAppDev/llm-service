@@ -51,7 +51,7 @@ You can access the service at https://${env.domain}
 Your initial password is: ${msg.password}
 
 We strongly recommend changing your password once you successfully log in. Simply click on your
-account badge in the bottom-right.
+account badge in the bottom-left.
 
 If you don't want an account, you can safely ignore this message.
 
