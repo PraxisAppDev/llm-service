@@ -67,6 +67,8 @@ export default $config({
       handler: "src/emailer.handler",
       architecture: "arm64",
       runtime: "nodejs22.x",
+      memory: "256 MB",
+      timeout: "15 seconds",
       link: [email],
       environment: {
         LLMSVC_STAGE: $app.stage,
@@ -95,6 +97,8 @@ export default $config({
       handler: "src/index.handler",
       architecture: "arm64",
       runtime: "nodejs22.x",
+      memory: "512 MB",
+      timeout: "30 seconds",
       link: [db, emailQueue],
       permissions: [
         {
