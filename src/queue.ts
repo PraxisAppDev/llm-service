@@ -7,7 +7,7 @@ const client = new SQSClient({});
 export const sendEmailerMessage = async (msg: EmailerCommand, ddId?: string) => {
   const cmd = new SendMessageCommand({
     QueueUrl: Resource.Emailer.url,
-    MessageGroupId: "NEW-ADMIN",
+    MessageGroupId: msg.type,
     MessageDeduplicationId: ddId,
     MessageBody: JSON.stringify(msg),
   });
