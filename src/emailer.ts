@@ -94,6 +94,10 @@ Your initial API key is: ${msg.apiKey}
 
 This key expires on ${format(fromUnixTime(msg.expiresAt), "PPPppp")}.
 
+Please ensure that this API key never gets checked into any version control system. We recommend
+using local environment variables instead. Please let an admin know ASAP if any API key gets exposed
+or lost so that we can revoke it.
+
 If you don't want or need access to the service, you can safely ignore this message.
 
 Cheers,
@@ -133,6 +137,10 @@ Your new API key is: ${msg.apiKey}
 This key expires on ${format(fromUnixTime(msg.expiresAt), "PPPppp")}.
 
 As a reminder, you can access the API documentation at https://api.${env.domain}/docs.
+
+Please ensure that this API key never gets checked into any version control system. We recommend
+using local environment variables instead. Please let an admin know ASAP if any API key gets exposed
+or lost so that we can revoke it.
 
 If you don't want or need access to the service, you can safely ignore this message.
 

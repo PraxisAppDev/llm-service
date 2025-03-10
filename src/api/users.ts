@@ -3,6 +3,7 @@ import { formatISO, getUnixTime, parseISO } from "date-fns";
 import { authorizeToken, key, uid } from "../auth";
 import { responseTypes } from "../common";
 import { apiUsers } from "../db";
+import { sendEmailerMessage } from "../queue";
 import { CreateUserRequest } from "../schemas";
 
 export const listUsers = async (token?: string) => {
@@ -66,6 +67,17 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
 
   await apiUsers.create(user, { ...apiKey, key: fullKey, expiresAtUnix });
 
+  await sendEmailerMessage(
+    {
+      type: "new-user",
+      name: user.name,
+      email: user.email,
+      apiKey: fullKey,
+      expiresAt: expiresAtUnix,
+    },
+    user.id
+  );
+
   return {
     user: { ...user, apiKeys: [apiKey] },
   };
@@ -125,6 +137,17 @@ export const createUserKey = async (userId: string, expiresAt: string, token?: s
   };
 
   await apiUsers.createKey(user, { ...apiKey, key: fullKey, expiresAtUnix });
+
+  await sendEmailerMessage(
+    {
+      type: "new-key",
+      name: user.name,
+      email: user.email,
+      apiKey: fullKey,
+      expiresAt: expiresAtUnix,
+    },
+    user.id
+  );
 
   return {
     key: apiKey,

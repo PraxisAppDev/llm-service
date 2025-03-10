@@ -1,4 +1,13 @@
 import { createUserKey } from "@/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -12,13 +21,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useUsers } from "@/hooks/use-users";
 import { cn } from "@/lib/utils";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { addDays, format, formatISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -42,6 +52,15 @@ function CreateKey() {
   }, [navigate]);
   const [open, setOpen] = useState(true);
   const [expires, setExpires] = useState<Date | undefined>(undefined);
+  const { data } = useUsers();
+  const [validParams, user] = useMemo(() => {
+    if (!data) return [undefined, undefined];
+    const user = data.users.find((u) => u.id === userId);
+    if (!user) {
+      return [false, undefined];
+    }
+    return [true, user];
+  }, [userId, data]);
   const mutation = useMutation({
     mutationKey: ["createUserKey"],
     mutationFn: (params: CreateKeyParams) => {
@@ -70,6 +89,30 @@ function CreateKey() {
     },
   });
 
+  if (!data || validParams === undefined) return null;
+
+  if (!validParams || !user) {
+    // invalid user
+    return (
+      <AlertDialog
+        defaultOpen
+        onOpenChange={(open) => {
+          if (!open) goBack();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Invalid action</AlertDialogTitle>
+            <AlertDialogDescription>The selected API user does not exist.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>Back</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
   const isBusy = form.state.isSubmitting || mutation.isPending;
 
   return (
@@ -85,8 +128,10 @@ function CreateKey() {
           <DialogTitle>Create new API key</DialogTitle>
           <DialogDescription>
             Create a new API key for user{" "}
-            <span className="font-semibold text-foreground">{userId}</span>. Their new API key will
-            be emailed to them!
+            <span className="font-semibold text-foreground">
+              {user.name} &lt;{user.email}&gt;
+            </span>
+            . Their new API key will be emailed to them automatically!
           </DialogDescription>
         </DialogHeader>
         <form
