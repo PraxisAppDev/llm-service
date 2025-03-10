@@ -49,13 +49,33 @@ export default $config({
     });
 
     // EMAIL
-    // const email = new sst.aws.Email("Email", {
-    //   sender: domain,
-    //   dmarc: "v=DMARC1; p=reject; adkim=r;",
-    //   dns: sst.aws.dns({
-    //     zone: hostedZone,
-    //   }),
-    // });
+    const email = new sst.aws.Email("Email", {
+      sender: domain,
+      dmarc: "v=DMARC1; p=reject; adkim=r;",
+      dns: sst.aws.dns({
+        zone: hostedZone,
+      }),
+    });
+
+    // QUEUE
+
+    const emailQueue = new sst.aws.Queue("Emailer", {
+      fifo: true,
+    });
+
+    emailQueue.subscribe({
+      handler: "src/emailer.handler",
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      memory: "256 MB",
+      timeout: "15 seconds",
+      link: [email],
+      environment: {
+        LLMSVC_STAGE: $app.stage,
+        LLMSVC_DEV_MODE: $dev ? "true" : "false",
+        LLMSVC_DOMAIN: domain,
+      },
+    });
 
     // API
     const api = new sst.aws.ApiGatewayV2("Gateway", {
@@ -77,7 +97,9 @@ export default $config({
       handler: "src/index.handler",
       architecture: "arm64",
       runtime: "nodejs22.x",
-      link: [db],
+      memory: "512 MB",
+      timeout: "30 seconds",
+      link: [db, emailQueue],
       permissions: [
         {
           effect: "allow",
@@ -95,6 +117,7 @@ export default $config({
       environment: {
         LLMSVC_STAGE: $app.stage,
         LLMSVC_DEV_MODE: $dev ? "true" : "false",
+        LLMSVC_DOMAIN: domain,
       },
     });
 
@@ -126,6 +149,7 @@ export default $config({
     });
 
     return {
+      domain,
       table: db.name,
       api: api.url,
       ui: ui.url,

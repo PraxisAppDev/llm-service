@@ -3,6 +3,7 @@ import { addDays, formatISO } from "date-fns";
 import { authorizeToken, pwHash, pwVerify, sid, uid } from "../auth";
 import { responseTypes } from "../common";
 import { adminSessions, adminUsers } from "../db";
+import { sendEmailerMessage } from "../queue";
 import { ChangeAdminPwRequest, CreateAdminRequest } from "../schemas";
 
 export const listAdmins = async (token?: string) => {
@@ -60,6 +61,16 @@ export const createAdmin = async (req: CreateAdminRequest, token?: string) => {
   };
 
   await adminUsers.create(admin, pwh);
+
+  await sendEmailerMessage(
+    {
+      type: "new-admin",
+      name: admin.name,
+      email: admin.email,
+      password: req.password,
+    },
+    admin.id
+  );
 
   return {
     admin,

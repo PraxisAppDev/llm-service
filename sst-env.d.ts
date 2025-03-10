@@ -9,6 +9,15 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "Email": {
+      "configSet": string
+      "sender": string
+      "type": "sst.aws.Email"
+    }
+    "Emailer": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
     "Gateway": {
       "type": "sst.aws.ApiGatewayV2"
       "url": string

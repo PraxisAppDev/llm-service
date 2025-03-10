@@ -81,8 +81,8 @@ function CreateAdmin() {
         <DialogHeader>
           <DialogTitle>Create new admin</DialogTitle>
           <DialogDescription>
-            Add a new admin user that will have access to this console. Copy their temp password and
-            send it to them!
+            Add a new admin user that will have access to this console. Their initial password will
+            be emailed to them automatically!
           </DialogDescription>
         </DialogHeader>
         <form
