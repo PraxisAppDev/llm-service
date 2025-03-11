@@ -77,10 +77,10 @@ function CreateKey() {
       goBack();
     },
   });
-  const form = useForm<CreateKeyParams>({
+  const form = useForm({
     defaultValues: {
       keyExpiresAt: "",
-    },
+    } as CreateKeyParams,
     validators: {
       onChange: createKeySchema,
     },

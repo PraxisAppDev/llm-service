@@ -53,12 +53,12 @@ function CreateAdmin() {
     },
     retry: false,
   });
-  const form = useForm<CreateAdminParams>({
+  const form = useForm({
     defaultValues: {
       name: "",
       email: "",
       password: tempPassword(10),
-    },
+    } as CreateAdminParams,
     validators: {
       onChange: createAdminSchema,
     },
