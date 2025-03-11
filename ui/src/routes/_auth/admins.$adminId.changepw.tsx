@@ -70,12 +70,12 @@ function ChangeAdminPassword() {
     },
     retry: false,
   });
-  const form = useForm<ChangeAdminPwParams>({
+  const form = useForm({
     defaultValues: {
       currentPassword: "",
       newPassword: "",
       repeatNewPassword: "",
-    },
+    } as ChangeAdminPwParams,
     validators: {
       onChange: ({ value }) => {
         const pwm =

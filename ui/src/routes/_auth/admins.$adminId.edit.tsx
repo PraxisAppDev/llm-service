@@ -61,11 +61,11 @@ function EditAdmin() {
     },
     retry: false,
   });
-  const form = useForm<EditAdminParams>({
+  const form = useForm({
     defaultValues: {
       name: auth.user?.name || "",
       email: auth.user?.email || "",
-    },
+    } as EditAdminParams,
     validators: {
       onChange: editAdminSchema,
     },

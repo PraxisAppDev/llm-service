@@ -64,7 +64,7 @@ function Message({ msg }: { msg: ChatMessage }) {
   }
 }
 
-const formOpts = formOptions<ChatInputs>({
+const formOpts = formOptions({
   defaultValues: {
     model: "",
     system: DEFAULT_SYSTEM,
@@ -72,7 +72,7 @@ const formOpts = formOptions<ChatInputs>({
     topP: 0.9,
     maxGenLen: 512,
     userInput: "",
-  },
+  } as ChatInputs,
 });
 
 export function ChatInterface({ models }: { models: Model[] }) {

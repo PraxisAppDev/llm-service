@@ -59,12 +59,12 @@ function CreateUser() {
       goBack();
     },
   });
-  const form = useForm<CreateUserParams>({
+  const form = useForm({
     defaultValues: {
       name: "",
       email: "",
       keyExpiresAt: "",
-    },
+    } as CreateUserParams,
     validators: {
       onChange: createUserSchema,
     },

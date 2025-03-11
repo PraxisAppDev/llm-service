@@ -13,11 +13,11 @@ const loginSchema = z.object({
   password: z.string().nonempty("You must enter a password"),
 });
 type LoginParams = z.infer<typeof loginSchema>;
-const formOpts = formOptions<LoginParams>({
+const formOpts = formOptions({
   defaultValues: {
     email: "",
     password: "",
-  },
+  } as LoginParams,
 });
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
