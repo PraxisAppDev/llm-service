@@ -20,9 +20,6 @@ jobs:
         with:
           node-version: 22.x
           cache: "npm"
-          cache-dependency-path: |
-            package-lock.json
-            ui/package-lock.json
       - name: Setup AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
