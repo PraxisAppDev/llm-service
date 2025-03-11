@@ -15,18 +15,19 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
           cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
       - name: Setup AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.DEPLOYMENT_ROLE }}
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Install backend dependencies
         run: npm install
       - name: Install frontend dependencies
