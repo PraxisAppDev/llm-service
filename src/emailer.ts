@@ -26,13 +26,13 @@ const processMsg = async (msg: SQSRecord) => {
   try {
     switch (ecmd.type) {
       case "new-admin":
-        sendNewAdminEmail(ecmd);
+        await sendNewAdminEmail(ecmd);
         break;
       case "new-user":
-        sendNewUserEmail(ecmd);
+        await sendNewUserEmail(ecmd);
         break;
       case "new-key":
-        sendNewKeyEmail(ecmd);
+        await sendNewKeyEmail(ecmd);
         break;
     }
   } catch (e) {
