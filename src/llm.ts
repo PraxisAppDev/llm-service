@@ -1,27 +1,24 @@
-import {
-  BedrockClient,
-  GetFoundationModelCommand,
-} from "@aws-sdk/client-bedrock";
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand,
-} from "@aws-sdk/client-bedrock-runtime";
+import { BedrockClient, GetFoundationModelCommand } from "@aws-sdk/client-bedrock";
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 
 const client = new BedrockClient();
 const runtime = new BedrockRuntimeClient();
 
 const META_LLAMA_33_70B = "meta-llama3.3-70b";
+const META_LLAMA_32_11B = "meta-llama3.2-11b";
 const META_LLAMA_32_3B = "meta-llama3.2-3b";
 const META_LLAMA_32_1B = "meta-llama3.2-1b";
 
 export const MODELS = [
   { name: "Llama 3.3 70B Instruct", provider: "Meta", id: META_LLAMA_33_70B },
+  { name: "Llama 3.2 11B Instruct", provider: "Meta", id: META_LLAMA_32_11B },
   { name: "Llama 3.2 3B Instruct", provider: "Meta", id: META_LLAMA_32_3B },
   { name: "Llama 3.2 1B Instruct", provider: "Meta", id: META_LLAMA_32_1B },
 ];
 
 const MODELS_TO_AWS = new Map<string, string>();
 MODELS_TO_AWS.set(META_LLAMA_33_70B, "meta.llama3-3-70b-instruct-v1:0");
+MODELS_TO_AWS.set(META_LLAMA_32_11B, "meta.llama3-2-11b-instruct-v1:0");
 MODELS_TO_AWS.set(META_LLAMA_32_3B, "meta.llama3-2-3b-instruct-v1:0");
 MODELS_TO_AWS.set(META_LLAMA_32_1B, "meta.llama3-2-1b-instruct-v1:0");
 

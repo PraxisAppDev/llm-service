@@ -24,6 +24,8 @@ export const completion = async (req: CompletionRequest, token?: string, bearer?
     };
   }
 
+  console.info(`Completion request: ${req.system.length} system, ${req.prompt.length} prompt`);
+
   let gen = await llm.getCompletion(
     awsModelId,
     req.system,
@@ -31,6 +33,10 @@ export const completion = async (req: CompletionRequest, token?: string, bearer?
     req.temperature,
     req.topP,
     req.maxGenLen
+  );
+
+  console.info(
+    `Completion response: ${gen.inputTokens} input tokens, ${gen.outputTokens} output tokens`
   );
 
   return {
@@ -66,6 +72,12 @@ export const chatCompletion = async (req: ChatRequest, token?: string, bearer?: 
       errorStatus: 401 as 401,
     };
   }
+
+  console.info(
+    `Chat request: ${req.system.length} system, ${
+      req.messages.length
+    } messages, ${req.messages.reduce((acc, m) => acc + m.message.length, 0)} prompt`
+  );
 
   let gen = await llm.getChatCompletion(
     awsModelId,
