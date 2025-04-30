@@ -88,6 +88,8 @@ export const chatCompletion = async (req: ChatRequest, token?: string, bearer?: 
     req.maxGenLen
   );
 
+  console.info(`Chat response: ${gen.inputTokens} input tokens, ${gen.outputTokens} output tokens`);
+
   return {
     completion: {
       model: req.model,

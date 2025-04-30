@@ -4,12 +4,16 @@ import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedroc
 const client = new BedrockClient();
 const runtime = new BedrockRuntimeClient();
 
+const META_LLAMA_4M_17B = "meta-llama4-maverick-17b";
+const META_LLAMA_4S_17B = "meta-llama4-scout-17b";
 const META_LLAMA_33_70B = "meta-llama3.3-70b";
 const META_LLAMA_32_11B = "meta-llama3.2-11b";
 const META_LLAMA_32_3B = "meta-llama3.2-3b";
 const META_LLAMA_32_1B = "meta-llama3.2-1b";
 
 export const MODELS = [
+  { name: "Llama 4 Maverick 17B Instruct", provider: "Meta", id: META_LLAMA_4M_17B },
+  { name: "Llama 4 Scout 17B Instruct", provider: "Meta", id: META_LLAMA_4S_17B },
   { name: "Llama 3.3 70B Instruct", provider: "Meta", id: META_LLAMA_33_70B },
   { name: "Llama 3.2 11B Instruct", provider: "Meta", id: META_LLAMA_32_11B },
   { name: "Llama 3.2 3B Instruct", provider: "Meta", id: META_LLAMA_32_3B },
@@ -17,6 +21,8 @@ export const MODELS = [
 ];
 
 const MODELS_TO_AWS = new Map<string, string>();
+MODELS_TO_AWS.set(META_LLAMA_4M_17B, "meta.llama4-maverick-17b-instruct-v1:0");
+MODELS_TO_AWS.set(META_LLAMA_4S_17B, "meta.llama4-scout-17b-instruct-v1:0");
 MODELS_TO_AWS.set(META_LLAMA_33_70B, "meta.llama3-3-70b-instruct-v1:0");
 MODELS_TO_AWS.set(META_LLAMA_32_11B, "meta.llama3-2-11b-instruct-v1:0");
 MODELS_TO_AWS.set(META_LLAMA_32_3B, "meta.llama3-2-3b-instruct-v1:0");
@@ -58,7 +64,7 @@ const getCompletion = async (
   const cmd = new InvokeModelCommand({
     modelId: `us.${awsModelId}`,
     body: JSON.stringify({
-      prompt: buildLlama3Prompt(system, [{ role: "user", message: prompt }]),
+      prompt: buildLlamaPrompt(system, [{ role: "user", message: prompt }]),
       temperature,
       top_p: topP,
       max_gen_len: maxGenLen,
@@ -93,7 +99,7 @@ const getChatCompletion = async (
   const cmd = new InvokeModelCommand({
     modelId: `us.${awsModelId}`,
     body: JSON.stringify({
-      prompt: buildLlama3Prompt(system, messages),
+      prompt: buildLlamaPrompt(system, messages),
       temperature,
       top_p: topP,
       max_gen_len: maxGenLen,
@@ -133,7 +139,7 @@ const START_ID = "<|start_header_id|>";
 const END_ID = "<|end_header_id|>";
 const END_TURN = "<|eot_id|>";
 
-const buildLlama3Prompt = (system: string, messages: PromptMsg[]) => {
+const buildLlamaPrompt = (system: string, messages: PromptMsg[]) => {
   let prompt = "<|begin_of_text|>";
 
   // system

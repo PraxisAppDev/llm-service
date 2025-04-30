@@ -152,7 +152,7 @@ export function ChatInterface({ models }: { models: Model[] }) {
                     }}
                     disabled={isBusy}
                   >
-                    <SelectTrigger className="w-[280px]">
+                    <SelectTrigger className="w-[340px]">
                       <SelectValue placeholder="Select a model..." />
                     </SelectTrigger>
                     <SelectContent>
