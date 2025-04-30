@@ -12,7 +12,7 @@ const TanStackRouterDevtools = import.meta.env.PROD
   ? () => null // Render nothing in production
   : React.lazy(() =>
       // Lazy load in development
-      import("@tanstack/router-devtools").then((res) => ({
+      import("@tanstack/react-router-devtools").then((res) => ({
         default: res.TanStackRouterDevtools,
       })),
     );
@@ -41,7 +41,7 @@ function Root() {
         <TanStackRouterDevtools
           initialIsOpen={false}
           position="bottom-right"
-          toggleButtonProps={{ className: "right-16" }}
+          toggleButtonProps={{ class: "right-16" }} // see https://github.com/TanStack/router/issues/4069
         />
       </Suspense>
       <Suspense>
