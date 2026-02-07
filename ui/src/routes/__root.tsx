@@ -41,7 +41,7 @@ function Root() {
         <TanStackRouterDevtools
           initialIsOpen={false}
           position="bottom-right"
-          toggleButtonProps={{ class: "right-16" }} // see https://github.com/TanStack/router/issues/4069
+          toggleButtonProps={{ className: "right-16" }} // see https://github.com/TanStack/router/issues/4069
         />
       </Suspense>
       <Suspense>
