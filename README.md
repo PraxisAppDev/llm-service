@@ -11,8 +11,30 @@ machines.
 
 ## Setup
 
-TODO
+You'll need:
+
+- An AWS account
+- AWS credentials setup in a local profile
+- Node.js 22.x
+
+Clone the repo and run `npm install` in both the root and `ui` directories.
 
 ## Development
 
-TODO
+Start SST to deploy a development environment in AWS and run the UI locally:
+
+```shell
+$ AWS_PROFILE=<profile> npm run dev
+```
+
+Use the provided script to seed an admin user in your development environment:
+
+```shell
+$ AWS_PROFILE=<profile> npm run seed:admin "Name" "email address" password
+```
+
+To tear down your development environment in AWS:
+
+```shell
+$ AWS_PROFILE=<profile> npm run remove
+```

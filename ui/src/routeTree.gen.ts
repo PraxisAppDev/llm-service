@@ -8,216 +8,297 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AuthIndexRouteImport } from './routes/_auth/index'
+import { Route as AuthUsersRouteImport } from './routes/_auth/users'
+import { Route as AuthPlaygroundRouteImport } from './routes/_auth/playground'
+import { Route as AuthAdminsRouteImport } from './routes/_auth/admins'
+import { Route as AuthUsersNewRouteImport } from './routes/_auth/users.new'
+import { Route as AuthAdminsNewRouteImport } from './routes/_auth/admins.new'
+import { Route as AuthUsersUserIdDeleteRouteImport } from './routes/_auth/users.$userId.delete'
+import { Route as AuthAdminsAdminIdEditRouteImport } from './routes/_auth/admins.$adminId.edit'
+import { Route as AuthAdminsAdminIdDeleteRouteImport } from './routes/_auth/admins.$adminId.delete'
+import { Route as AuthAdminsAdminIdChangepwRouteImport } from './routes/_auth/admins.$adminId.changepw'
+import { Route as AuthUsersUserIdKeysNewRouteImport } from './routes/_auth/users.$userId.keys.new'
+import { Route as AuthUsersUserIdKeysKeyIdRevokeRouteImport } from './routes/_auth/users.$userId.keys.$keyId.revoke'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as LoginImport } from './routes/login'
-import { Route as AuthImport } from './routes/_auth'
-import { Route as AuthIndexImport } from './routes/_auth/index'
-import { Route as AuthUsersImport } from './routes/_auth/users'
-import { Route as AuthPlaygroundImport } from './routes/_auth/playground'
-import { Route as AuthAdminsImport } from './routes/_auth/admins'
-import { Route as AuthUsersNewImport } from './routes/_auth/users.new'
-import { Route as AuthAdminsNewImport } from './routes/_auth/admins.new'
-import { Route as AuthUsersUserIdDeleteImport } from './routes/_auth/users.$userId.delete'
-import { Route as AuthAdminsAdminIdEditImport } from './routes/_auth/admins.$adminId.edit'
-import { Route as AuthAdminsAdminIdDeleteImport } from './routes/_auth/admins.$adminId.delete'
-import { Route as AuthAdminsAdminIdChangepwImport } from './routes/_auth/admins.$adminId.changepw'
-import { Route as AuthUsersUserIdKeysNewImport } from './routes/_auth/users.$userId.keys.new'
-import { Route as AuthUsersUserIdKeysKeyIdRevokeImport } from './routes/_auth/users.$userId.keys.$keyId.revoke'
-
-// Create/Update Routes
-
-const LoginRoute = LoginImport.update({
+const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AuthRoute = AuthImport.update({
+const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AuthIndexRoute = AuthIndexImport.update({
+const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthRoute,
 } as any)
-
-const AuthUsersRoute = AuthUsersImport.update({
+const AuthUsersRoute = AuthUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AuthRoute,
 } as any)
-
-const AuthPlaygroundRoute = AuthPlaygroundImport.update({
+const AuthPlaygroundRoute = AuthPlaygroundRouteImport.update({
   id: '/playground',
   path: '/playground',
   getParentRoute: () => AuthRoute,
 } as any)
-
-const AuthAdminsRoute = AuthAdminsImport.update({
+const AuthAdminsRoute = AuthAdminsRouteImport.update({
   id: '/admins',
   path: '/admins',
   getParentRoute: () => AuthRoute,
 } as any)
-
-const AuthUsersNewRoute = AuthUsersNewImport.update({
+const AuthUsersNewRoute = AuthUsersNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => AuthUsersRoute,
 } as any)
-
-const AuthAdminsNewRoute = AuthAdminsNewImport.update({
+const AuthAdminsNewRoute = AuthAdminsNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => AuthAdminsRoute,
 } as any)
-
-const AuthUsersUserIdDeleteRoute = AuthUsersUserIdDeleteImport.update({
+const AuthUsersUserIdDeleteRoute = AuthUsersUserIdDeleteRouteImport.update({
   id: '/$userId/delete',
   path: '/$userId/delete',
   getParentRoute: () => AuthUsersRoute,
 } as any)
-
-const AuthAdminsAdminIdEditRoute = AuthAdminsAdminIdEditImport.update({
+const AuthAdminsAdminIdEditRoute = AuthAdminsAdminIdEditRouteImport.update({
   id: '/$adminId/edit',
   path: '/$adminId/edit',
   getParentRoute: () => AuthAdminsRoute,
 } as any)
-
-const AuthAdminsAdminIdDeleteRoute = AuthAdminsAdminIdDeleteImport.update({
+const AuthAdminsAdminIdDeleteRoute = AuthAdminsAdminIdDeleteRouteImport.update({
   id: '/$adminId/delete',
   path: '/$adminId/delete',
   getParentRoute: () => AuthAdminsRoute,
 } as any)
-
-const AuthAdminsAdminIdChangepwRoute = AuthAdminsAdminIdChangepwImport.update({
-  id: '/$adminId/changepw',
-  path: '/$adminId/changepw',
-  getParentRoute: () => AuthAdminsRoute,
-} as any)
-
-const AuthUsersUserIdKeysNewRoute = AuthUsersUserIdKeysNewImport.update({
+const AuthAdminsAdminIdChangepwRoute =
+  AuthAdminsAdminIdChangepwRouteImport.update({
+    id: '/$adminId/changepw',
+    path: '/$adminId/changepw',
+    getParentRoute: () => AuthAdminsRoute,
+  } as any)
+const AuthUsersUserIdKeysNewRoute = AuthUsersUserIdKeysNewRouteImport.update({
   id: '/$userId/keys/new',
   path: '/$userId/keys/new',
   getParentRoute: () => AuthUsersRoute,
 } as any)
-
 const AuthUsersUserIdKeysKeyIdRevokeRoute =
-  AuthUsersUserIdKeysKeyIdRevokeImport.update({
+  AuthUsersUserIdKeysKeyIdRevokeRouteImport.update({
     id: '/$userId/keys/$keyId/revoke',
     path: '/$userId/keys/$keyId/revoke',
     getParentRoute: () => AuthUsersRoute,
   } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof AuthIndexRoute
+  '/login': typeof LoginRoute
+  '/admins': typeof AuthAdminsRouteWithChildren
+  '/playground': typeof AuthPlaygroundRoute
+  '/users': typeof AuthUsersRouteWithChildren
+  '/admins/new': typeof AuthAdminsNewRoute
+  '/users/new': typeof AuthUsersNewRoute
+  '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
+  '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
+  '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
+  '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
+  '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
+}
+export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/admins': typeof AuthAdminsRouteWithChildren
+  '/playground': typeof AuthPlaygroundRoute
+  '/users': typeof AuthUsersRouteWithChildren
+  '/': typeof AuthIndexRoute
+  '/admins/new': typeof AuthAdminsNewRoute
+  '/users/new': typeof AuthUsersNewRoute
+  '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
+  '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
+  '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
+  '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
+  '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/_auth': typeof AuthRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_auth/admins': typeof AuthAdminsRouteWithChildren
+  '/_auth/playground': typeof AuthPlaygroundRoute
+  '/_auth/users': typeof AuthUsersRouteWithChildren
+  '/_auth/': typeof AuthIndexRoute
+  '/_auth/admins/new': typeof AuthAdminsNewRoute
+  '/_auth/users/new': typeof AuthUsersNewRoute
+  '/_auth/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
+  '/_auth/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
+  '/_auth/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
+  '/_auth/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
+  '/_auth/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
+  '/_auth/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/admins'
+    | '/playground'
+    | '/users'
+    | '/admins/new'
+    | '/users/new'
+    | '/admins/$adminId/changepw'
+    | '/admins/$adminId/delete'
+    | '/admins/$adminId/edit'
+    | '/users/$userId/delete'
+    | '/users/$userId/keys/new'
+    | '/users/$userId/keys/$keyId/revoke'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/login'
+    | '/admins'
+    | '/playground'
+    | '/users'
+    | '/'
+    | '/admins/new'
+    | '/users/new'
+    | '/admins/$adminId/changepw'
+    | '/admins/$adminId/delete'
+    | '/admins/$adminId/edit'
+    | '/users/$userId/delete'
+    | '/users/$userId/keys/new'
+    | '/users/$userId/keys/$keyId/revoke'
+  id:
+    | '__root__'
+    | '/_auth'
+    | '/login'
+    | '/_auth/admins'
+    | '/_auth/playground'
+    | '/_auth/users'
+    | '/_auth/'
+    | '/_auth/admins/new'
+    | '/_auth/users/new'
+    | '/_auth/admins/$adminId/changepw'
+    | '/_auth/admins/$adminId/delete'
+    | '/_auth/admins/$adminId/edit'
+    | '/_auth/users/$userId/delete'
+    | '/_auth/users/$userId/keys/new'
+    | '/_auth/users/$userId/keys/$keyId/revoke'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  AuthRoute: typeof AuthRouteWithChildren
+  LoginRoute: typeof LoginRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_auth': {
-      id: '/_auth'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthImport
-      parentRoute: typeof rootRoute
-    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_auth/admins': {
-      id: '/_auth/admins'
-      path: '/admins'
-      fullPath: '/admins'
-      preLoaderRoute: typeof AuthAdminsImport
-      parentRoute: typeof AuthImport
-    }
-    '/_auth/playground': {
-      id: '/_auth/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof AuthPlaygroundImport
-      parentRoute: typeof AuthImport
-    }
-    '/_auth/users': {
-      id: '/_auth/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthUsersImport
-      parentRoute: typeof AuthImport
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_auth/': {
       id: '/_auth/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthIndexImport
-      parentRoute: typeof AuthImport
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_auth/admins/new': {
-      id: '/_auth/admins/new'
-      path: '/new'
-      fullPath: '/admins/new'
-      preLoaderRoute: typeof AuthAdminsNewImport
-      parentRoute: typeof AuthAdminsImport
+    '/_auth/users': {
+      id: '/_auth/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthUsersRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/playground': {
+      id: '/_auth/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof AuthPlaygroundRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/admins': {
+      id: '/_auth/admins'
+      path: '/admins'
+      fullPath: '/admins'
+      preLoaderRoute: typeof AuthAdminsRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_auth/users/new': {
       id: '/_auth/users/new'
       path: '/new'
       fullPath: '/users/new'
-      preLoaderRoute: typeof AuthUsersNewImport
-      parentRoute: typeof AuthUsersImport
+      preLoaderRoute: typeof AuthUsersNewRouteImport
+      parentRoute: typeof AuthUsersRoute
     }
-    '/_auth/admins/$adminId/changepw': {
-      id: '/_auth/admins/$adminId/changepw'
-      path: '/$adminId/changepw'
-      fullPath: '/admins/$adminId/changepw'
-      preLoaderRoute: typeof AuthAdminsAdminIdChangepwImport
-      parentRoute: typeof AuthAdminsImport
-    }
-    '/_auth/admins/$adminId/delete': {
-      id: '/_auth/admins/$adminId/delete'
-      path: '/$adminId/delete'
-      fullPath: '/admins/$adminId/delete'
-      preLoaderRoute: typeof AuthAdminsAdminIdDeleteImport
-      parentRoute: typeof AuthAdminsImport
-    }
-    '/_auth/admins/$adminId/edit': {
-      id: '/_auth/admins/$adminId/edit'
-      path: '/$adminId/edit'
-      fullPath: '/admins/$adminId/edit'
-      preLoaderRoute: typeof AuthAdminsAdminIdEditImport
-      parentRoute: typeof AuthAdminsImport
+    '/_auth/admins/new': {
+      id: '/_auth/admins/new'
+      path: '/new'
+      fullPath: '/admins/new'
+      preLoaderRoute: typeof AuthAdminsNewRouteImport
+      parentRoute: typeof AuthAdminsRoute
     }
     '/_auth/users/$userId/delete': {
       id: '/_auth/users/$userId/delete'
       path: '/$userId/delete'
       fullPath: '/users/$userId/delete'
-      preLoaderRoute: typeof AuthUsersUserIdDeleteImport
-      parentRoute: typeof AuthUsersImport
+      preLoaderRoute: typeof AuthUsersUserIdDeleteRouteImport
+      parentRoute: typeof AuthUsersRoute
+    }
+    '/_auth/admins/$adminId/edit': {
+      id: '/_auth/admins/$adminId/edit'
+      path: '/$adminId/edit'
+      fullPath: '/admins/$adminId/edit'
+      preLoaderRoute: typeof AuthAdminsAdminIdEditRouteImport
+      parentRoute: typeof AuthAdminsRoute
+    }
+    '/_auth/admins/$adminId/delete': {
+      id: '/_auth/admins/$adminId/delete'
+      path: '/$adminId/delete'
+      fullPath: '/admins/$adminId/delete'
+      preLoaderRoute: typeof AuthAdminsAdminIdDeleteRouteImport
+      parentRoute: typeof AuthAdminsRoute
+    }
+    '/_auth/admins/$adminId/changepw': {
+      id: '/_auth/admins/$adminId/changepw'
+      path: '/$adminId/changepw'
+      fullPath: '/admins/$adminId/changepw'
+      preLoaderRoute: typeof AuthAdminsAdminIdChangepwRouteImport
+      parentRoute: typeof AuthAdminsRoute
     }
     '/_auth/users/$userId/keys/new': {
       id: '/_auth/users/$userId/keys/new'
       path: '/$userId/keys/new'
       fullPath: '/users/$userId/keys/new'
-      preLoaderRoute: typeof AuthUsersUserIdKeysNewImport
-      parentRoute: typeof AuthUsersImport
+      preLoaderRoute: typeof AuthUsersUserIdKeysNewRouteImport
+      parentRoute: typeof AuthUsersRoute
     }
     '/_auth/users/$userId/keys/$keyId/revoke': {
       id: '/_auth/users/$userId/keys/$keyId/revoke'
       path: '/$userId/keys/$keyId/revoke'
       fullPath: '/users/$userId/keys/$keyId/revoke'
-      preLoaderRoute: typeof AuthUsersUserIdKeysKeyIdRevokeImport
-      parentRoute: typeof AuthUsersImport
+      preLoaderRoute: typeof AuthUsersUserIdKeysKeyIdRevokeRouteImport
+      parentRoute: typeof AuthUsersRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface AuthAdminsRouteChildren {
   AuthAdminsNewRoute: typeof AuthAdminsNewRoute
@@ -271,204 +352,10 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-export interface FileRoutesByFullPath {
-  '': typeof AuthRouteWithChildren
-  '/login': typeof LoginRoute
-  '/admins': typeof AuthAdminsRouteWithChildren
-  '/playground': typeof AuthPlaygroundRoute
-  '/users': typeof AuthUsersRouteWithChildren
-  '/': typeof AuthIndexRoute
-  '/admins/new': typeof AuthAdminsNewRoute
-  '/users/new': typeof AuthUsersNewRoute
-  '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
-  '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
-  '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
-  '/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
-  '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
-  '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
-}
-
-export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/admins': typeof AuthAdminsRouteWithChildren
-  '/playground': typeof AuthPlaygroundRoute
-  '/users': typeof AuthUsersRouteWithChildren
-  '/': typeof AuthIndexRoute
-  '/admins/new': typeof AuthAdminsNewRoute
-  '/users/new': typeof AuthUsersNewRoute
-  '/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
-  '/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
-  '/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
-  '/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
-  '/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
-  '/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/_auth': typeof AuthRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_auth/admins': typeof AuthAdminsRouteWithChildren
-  '/_auth/playground': typeof AuthPlaygroundRoute
-  '/_auth/users': typeof AuthUsersRouteWithChildren
-  '/_auth/': typeof AuthIndexRoute
-  '/_auth/admins/new': typeof AuthAdminsNewRoute
-  '/_auth/users/new': typeof AuthUsersNewRoute
-  '/_auth/admins/$adminId/changepw': typeof AuthAdminsAdminIdChangepwRoute
-  '/_auth/admins/$adminId/delete': typeof AuthAdminsAdminIdDeleteRoute
-  '/_auth/admins/$adminId/edit': typeof AuthAdminsAdminIdEditRoute
-  '/_auth/users/$userId/delete': typeof AuthUsersUserIdDeleteRoute
-  '/_auth/users/$userId/keys/new': typeof AuthUsersUserIdKeysNewRoute
-  '/_auth/users/$userId/keys/$keyId/revoke': typeof AuthUsersUserIdKeysKeyIdRevokeRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | ''
-    | '/login'
-    | '/admins'
-    | '/playground'
-    | '/users'
-    | '/'
-    | '/admins/new'
-    | '/users/new'
-    | '/admins/$adminId/changepw'
-    | '/admins/$adminId/delete'
-    | '/admins/$adminId/edit'
-    | '/users/$userId/delete'
-    | '/users/$userId/keys/new'
-    | '/users/$userId/keys/$keyId/revoke'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/login'
-    | '/admins'
-    | '/playground'
-    | '/users'
-    | '/'
-    | '/admins/new'
-    | '/users/new'
-    | '/admins/$adminId/changepw'
-    | '/admins/$adminId/delete'
-    | '/admins/$adminId/edit'
-    | '/users/$userId/delete'
-    | '/users/$userId/keys/new'
-    | '/users/$userId/keys/$keyId/revoke'
-  id:
-    | '__root__'
-    | '/_auth'
-    | '/login'
-    | '/_auth/admins'
-    | '/_auth/playground'
-    | '/_auth/users'
-    | '/_auth/'
-    | '/_auth/admins/new'
-    | '/_auth/users/new'
-    | '/_auth/admins/$adminId/changepw'
-    | '/_auth/admins/$adminId/delete'
-    | '/_auth/admins/$adminId/edit'
-    | '/_auth/users/$userId/delete'
-    | '/_auth/users/$userId/keys/new'
-    | '/_auth/users/$userId/keys/$keyId/revoke'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  AuthRoute: typeof AuthRouteWithChildren
-  LoginRoute: typeof LoginRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   LoginRoute: LoginRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/_auth",
-        "/login"
-      ]
-    },
-    "/_auth": {
-      "filePath": "_auth.tsx",
-      "children": [
-        "/_auth/admins",
-        "/_auth/playground",
-        "/_auth/users",
-        "/_auth/"
-      ]
-    },
-    "/login": {
-      "filePath": "login.tsx"
-    },
-    "/_auth/admins": {
-      "filePath": "_auth/admins.tsx",
-      "parent": "/_auth",
-      "children": [
-        "/_auth/admins/new",
-        "/_auth/admins/$adminId/changepw",
-        "/_auth/admins/$adminId/delete",
-        "/_auth/admins/$adminId/edit"
-      ]
-    },
-    "/_auth/playground": {
-      "filePath": "_auth/playground.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/users": {
-      "filePath": "_auth/users.tsx",
-      "parent": "/_auth",
-      "children": [
-        "/_auth/users/new",
-        "/_auth/users/$userId/delete",
-        "/_auth/users/$userId/keys/new",
-        "/_auth/users/$userId/keys/$keyId/revoke"
-      ]
-    },
-    "/_auth/": {
-      "filePath": "_auth/index.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/admins/new": {
-      "filePath": "_auth/admins.new.tsx",
-      "parent": "/_auth/admins"
-    },
-    "/_auth/users/new": {
-      "filePath": "_auth/users.new.tsx",
-      "parent": "/_auth/users"
-    },
-    "/_auth/admins/$adminId/changepw": {
-      "filePath": "_auth/admins.$adminId.changepw.tsx",
-      "parent": "/_auth/admins"
-    },
-    "/_auth/admins/$adminId/delete": {
-      "filePath": "_auth/admins.$adminId.delete.tsx",
-      "parent": "/_auth/admins"
-    },
-    "/_auth/admins/$adminId/edit": {
-      "filePath": "_auth/admins.$adminId.edit.tsx",
-      "parent": "/_auth/admins"
-    },
-    "/_auth/users/$userId/delete": {
-      "filePath": "_auth/users.$userId.delete.tsx",
-      "parent": "/_auth/users"
-    },
-    "/_auth/users/$userId/keys/new": {
-      "filePath": "_auth/users.$userId.keys.new.tsx",
-      "parent": "/_auth/users"
-    },
-    "/_auth/users/$userId/keys/$keyId/revoke": {
-      "filePath": "_auth/users.$userId.keys.$keyId.revoke.tsx",
-      "parent": "/_auth/users"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
