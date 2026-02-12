@@ -140,9 +140,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel>
-            {appVersion()} &middot; {env.stage}
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>{`${appVersion()} · ${env.stage}`}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {refItems.map((item) => (
