@@ -62,7 +62,7 @@ Cheers,
   const cmd = new SendEmailCommand({
     FromEmailAddress: SENDER,
     Destination: {
-      ToAddresses: [msg.email], // TODO make this the real user email (SES production)
+      ToAddresses: [msg.email],
     },
     Content: {
       Simple: {
@@ -107,7 +107,7 @@ Cheers,
   const cmd = new SendEmailCommand({
     FromEmailAddress: SENDER,
     Destination: {
-      ToAddresses: [msg.email], // TODO make this the real user email (SES production)
+      ToAddresses: [msg.email],
     },
     Content: {
       Simple: {
@@ -151,7 +151,7 @@ Cheers,
   const cmd = new SendEmailCommand({
     FromEmailAddress: SENDER,
     Destination: {
-      ToAddresses: [msg.email], // TODO make this the real user email (SES production)
+      ToAddresses: [msg.email],
     },
     Content: {
       Simple: {
