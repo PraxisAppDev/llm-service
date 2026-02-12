@@ -75,7 +75,7 @@ export const createUser = async (req: CreateUserRequest, token?: string) => {
       apiKey: fullKey,
       expiresAt: expiresAtUnix,
     },
-    user.id
+    user.id,
   );
 
   return {
@@ -146,7 +146,7 @@ export const createUserKey = async (userId: string, expiresAt: string, token?: s
       apiKey: fullKey,
       expiresAt: expiresAtUnix,
     },
-    user.id
+    apiKey.id,
   );
 
   return {
